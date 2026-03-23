@@ -1,0 +1,82 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { Check, Loader2 } from "lucide-react";
+import type { AnalysisLoaderProps } from "@/types";
+import { ANALYSIS_STEPS } from "@/lib/utils";
+
+export function AnalysisLoader({ currentStep }: AnalysisLoaderProps) {
+  return (
+    <div className="w-full max-w-md mx-auto py-16">
+      {/* Central spinner */}
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+        className="w-16 h-16 mx-auto mb-10 rounded-full border-2 border-gray-800 border-t-amber-500"
+      />
+
+      {/* Steps */}
+      <div className="space-y-4" role="status" aria-live="polite">
+        {ANALYSIS_STEPS.map((label, index) => {
+          const isCompleted = index < currentStep;
+          const isActive = index === currentStep;
+
+          return (
+            <motion.div
+              key={label}
+              initial={{ opacity: 0, x: -16 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.15, duration: 0.3 }}
+              className={`flex items-center gap-4 px-5 py-3.5 rounded-xl border transition-all duration-300 ${
+                isCompleted
+                  ? "bg-emerald-500/5 border-emerald-500/20"
+                  : isActive
+                    ? "bg-amber-500/5 border-amber-500/30"
+                    : "bg-gray-900/50 border-gray-800"
+              }`}
+            >
+              {/* Step indicator */}
+              <div className="shrink-0">
+                {isCompleted ? (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center"
+                  >
+                    <Check size={14} className="text-emerald-400" />
+                  </motion.div>
+                ) : isActive ? (
+                  <div className="w-7 h-7 rounded-full bg-amber-500/20 flex items-center justify-center">
+                    <Loader2 size={14} className="text-amber-400 animate-spin" />
+                  </div>
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-gray-800 flex items-center justify-center">
+                    <span className="text-xs text-gray-600 font-mono">{index + 1}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Label */}
+              <span
+                className={`text-sm font-medium transition-colors ${
+                  isCompleted
+                    ? "text-emerald-400"
+                    : isActive
+                      ? "text-amber-400"
+                      : "text-gray-600"
+                }`}
+              >
+                {label}
+              </span>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Subtext */}
+      <p className="mt-8 text-center text-xs text-gray-600">
+        This usually takes 15–30 seconds depending on video length.
+      </p>
+    </div>
+  );
+}

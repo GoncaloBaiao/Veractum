@@ -1,0 +1,73 @@
+import type { Metadata } from "next";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "Veractum — See clearly. Think freely.",
+  description:
+    "AI-powered YouTube video analysis. Paste a link, get a structured summary, extracted claims, and AI fact-checking with sources and confidence scores.",
+  keywords: [
+    "fact-checking",
+    "YouTube analysis",
+    "AI summary",
+    "video analysis",
+    "claim extraction",
+    "Veractum",
+    "truth",
+    "misinformation",
+  ],
+  authors: [{ name: "Veractum" }],
+  openGraph: {
+    title: "Veractum — See clearly. Think freely.",
+    description:
+      "Paste a YouTube link. Get a structured summary, extracted claims, and AI fact-checking with sources.",
+    url: "https://veractum.app",
+    siteName: "Veractum",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Veractum — See clearly. Think freely.",
+    description:
+      "AI-powered YouTube video analysis and fact-checking with sources.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <head>
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${process.env.NEXT_PUBLIC_GA_ID}');`,
+              }}
+            />
+          </>
+        )}
+      </head>
+      <body className="bg-[#0a0a0f] text-gray-100 antialiased font-sans min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </body>
+    </html>
+  );
+}

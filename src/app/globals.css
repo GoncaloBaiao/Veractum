@@ -1,0 +1,206 @@
+@import "tailwindcss";
+
+/* ─── Base ─── */
+
+:root {
+  --background: #0a0a0f;
+  --foreground: #f3f4f6;
+  --accent: #f59e0b;
+  --accent-light: #fbbf24;
+  --accent-dark: #d97706;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ─── Scrollbar ─── */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #374151 #0a0a0f;
+}
+
+/* ─── Selection ─── */
+
+::selection {
+  background-color: rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+}
+
+/* ─── Focus ─── */
+
+:focus-visible {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+/* ─── Layout Utilities ─── */
+
+.page-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.section-spacing {
+  padding: 6rem 0;
+}
+
+/* ─── Typography Utilities ─── */
+
+.heading-primary {
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.heading-secondary {
+  font-size: clamp(2rem, 4vw, 3.75rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.text-body {
+  color: #9ca3af;
+  line-height: 1.75;
+}
+
+.text-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #f59e0b;
+}
+
+/* ─── Gradient Text ─── */
+
+.gradient-text {
+  background: linear-gradient(to right, #fbbf24, #fb923c, #fbbf24);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ─── Card ─── */
+
+.card {
+  background-color: #111827;
+  border: 2px solid #1f2937;
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.1);
+}
+
+/* ─── Claim Status Utilities ─── */
+
+.claim-supported {
+  background-color: rgba(52, 211, 153, 0.1);
+  border-color: rgba(52, 211, 153, 0.3);
+  color: #6ee7b7;
+}
+
+.claim-contested {
+  background-color: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.3);
+  color: #fca5a5;
+}
+
+.claim-opinion {
+  background-color: rgba(156, 163, 175, 0.1);
+  border-color: rgba(156, 163, 175, 0.3);
+  color: #d1d5db;
+}
+
+.claim-insufficient {
+  background-color: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+}
+
+/* ─── Glow Effects ─── */
+
+.glow-amber {
+  box-shadow:
+    0 0 20px rgba(245, 158, 11, 0.15),
+    0 0 60px rgba(245, 158, 11, 0.05);
+}
+
+/* ─── Animations ─── */
+
+@keyframes pulse-amber {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-amber {
+  animation: pulse-amber 4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #1f2937 25%,
+    #374151 50%,
+    #1f2937 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
