@@ -11,7 +11,7 @@ const fadeInUp = {
 
 export default function PricingPage() {
   return (
-    <div className="pt-32 pb-20">
+    <div className="pt-36 pb-28">
       <div className="page-container">
         {/* Header */}
         <motion.div
@@ -19,20 +19,20 @@ export default function PricingPage() {
           animate="visible"
           variants={fadeInUp}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
           <span className="text-label mb-3 inline-block">Pricing</span>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-100 mb-6">
             Simple, transparent{" "}
             <span className="gradient-text">pricing</span>
           </h1>
-          <p className="max-w-xl mx-auto text-gray-400 leading-relaxed">
+          <p className="max-w-2xl mx-auto text-gray-400 leading-relaxed text-base sm:text-lg">
             Start free, upgrade when you need more. No hidden fees, no surprises.
           </p>
         </motion.div>
 
         {/* Pricing cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-7 lg:gap-9 max-w-6xl mx-auto">
           {PRICING_TIERS.map((tier, index) => (
             <motion.div
               key={tier.name}
@@ -40,7 +40,7 @@ export default function PricingPage() {
               animate="visible"
               variants={fadeInUp}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={`relative flex flex-col bg-gray-900 rounded-2xl p-8 transition-all duration-300 ${
+              className={`relative flex flex-col bg-gray-900 rounded-2xl p-8 lg:p-9 transition-all duration-300 ${
                 tier.highlighted
                   ? "border-2 border-amber-500/50 shadow-lg shadow-amber-500/10 scale-[1.02]"
                   : "border-2 border-gray-800 hover:border-amber-500/30"
@@ -67,7 +67,7 @@ export default function PricingPage() {
               </div>
 
               {/* Features */}
-              <ul className="space-y-3 mb-8 flex-1">
+              <ul className="space-y-3.5 mb-9 flex-1">
                 {tier.features.map((feature) => (
                   <li key={feature} className="flex items-start gap-3">
                     <Check

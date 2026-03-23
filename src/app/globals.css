@@ -10,10 +10,10 @@
   --accent-dark: #d97706;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
-  padding: 0;
-  margin: 0;
 }
 
 html {
@@ -22,9 +22,12 @@ html {
 }
 
 body {
+  margin: 0;
+  padding: 0;
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -73,13 +76,13 @@ body {
 /* ─── Layout Utilities ─── */
 
 .page-container {
-  max-width: 1280px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 clamp(1rem, 2.5vw, 2rem);
 }
 
 .section-spacing {
-  padding: 6rem 0;
+  padding: clamp(4.5rem, 8vw, 7rem) 0;
 }
 
 /* ─── Typography Utilities ─── */

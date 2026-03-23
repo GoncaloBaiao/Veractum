@@ -48,11 +48,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  const shouldLoadGa = process.env.NODE_ENV === "production" && Boolean(gaId);
 
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="bg-[#0a0a0f] text-gray-100 antialiased font-sans min-h-screen flex flex-col">
-        {gaId ? (
+        {shouldLoadGa ? (
           <>
             <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
             <Script id="google-analytics" strategy="afterInteractive">
