@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import {
+  getPrismaClient,
+  DATABASE_UNAVAILABLE_MESSAGE,
+  isDatabaseUnavailableError,
+} from "@/lib/prisma";
 import { extractYouTubeId } from "@/lib/utils";
 import { getVideoMetadata } from "@/lib/youtube";
 import { fetchTranscript } from "@/lib/transcription";
@@ -8,6 +12,14 @@ import { factCheckClaims } from "@/lib/factcheck";
 import type { ApiResponse, AnalyzeResponse, Analysis, AnalysisListItem, FactCheckedClaim, Summary } from "@/types";
 
 export async function POST(request: NextRequest): Promise<NextResponse<ApiResponse<AnalyzeResponse>>> {
+  const prisma = getPrismaClient();
+  if (!prisma) {
+    return NextResponse.json(
+      { success: false, error: DATABASE_UNAVAILABLE_MESSAGE },
+      { status: 503 }
+    );
+  }
+
   try {
     const body = await request.json();
     const url: unknown = body?.url;
@@ -63,7 +75,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       },
       { status: 202 }
     );
-  } catch {
+  } catch (error) {
+    if (isDatabaseUnavailableError(error)) {
+      return NextResponse.json(
+        { success: false, error: DATABASE_UNAVAILABLE_MESSAGE },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
       { success: false, error: "Internal server error." },
       { status: 500 }
@@ -72,6 +91,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  const prisma = getPrismaClient();
+  if (!prisma) {
+    return NextResponse.json(
+      { success: false, error: DATABASE_UNAVAILABLE_MESSAGE },
+      { status: 503 }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
 
   // History mode
@@ -84,7 +111,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         include: { _count: { select: { claims: true } } },
       });
 
-      const items: AnalysisListItem[] = analyses.map((a) => ({
+      const items: AnalysisListItem[] = analyses.map((a: (typeof analyses)[number]) => ({
         id: a.id,
         videoTitle: a.videoTitle,
         thumbnailUrl: a.thumbnailUrl,
@@ -95,7 +122,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       }));
 
       return NextResponse.json({ success: true, data: items });
-    } catch {
+    } catch (error) {
+      if (isDatabaseUnavailableError(error)) {
+        return NextResponse.json(
+          { success: false, error: DATABASE_UNAVAILABLE_MESSAGE },
+          { status: 503 }
+        );
+      }
+
       return NextResponse.json(
         { success: false, error: "Failed to fetch history." },
         { status: 500 }
@@ -135,7 +169,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       duration: analysis.duration,
       publishedAt: analysis.publishedAt?.toISOString(),
       summary: analysis.summary as Summary | null,
-      claims: analysis.claims.map((c) => ({
+      claims: analysis.claims.map((c: (typeof analysis.claims)[number]) => ({
         id: c.id,
         text: c.text,
         type: c.type.toLowerCase() as FactCheckedClaim["type"],
@@ -151,7 +185,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     };
 
     return NextResponse.json({ success: true, data: response });
-  } catch {
+  } catch (error) {
+    if (isDatabaseUnavailableError(error)) {
+      return NextResponse.json(
+        { success: false, error: DATABASE_UNAVAILABLE_MESSAGE },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
       { success: false, error: "Failed to fetch analysis." },
       { status: 500 }
@@ -160,6 +201,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 }
 
 async function processAnalysis(analysisId: string, videoId: string, videoTitle: string): Promise<void> {
+  const prisma = getPrismaClient();
+  if (!prisma) {
+    return;
+  }
+
   try {
     // Step 1: Fetch transcript
     const { transcript } = await fetchTranscript(videoId);
@@ -199,9 +245,11 @@ async function processAnalysis(analysisId: string, videoId: string, videoTitle: 
     ]);
   } catch (error) {
     console.error("Analysis processing failed:", error);
-    await prisma.analysis.update({
-      where: { id: analysisId },
-      data: { status: "FAILED" },
-    });
+    if (!isDatabaseUnavailableError(error)) {
+      await prisma.analysis.update({
+        where: { id: analysisId },
+        data: { status: "FAILED" },
+      });
+    }
   }
 }
