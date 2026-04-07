@@ -1,15 +1,15 @@
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { Summary, Claim, TimelineSegment } from "@/types";
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
 
-function getClient(): OpenAI {
-  const apiKey = process.env.OPENAI_API_KEY;
+function getClient(): GoogleGenerativeAI {
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("OPENAI_API_KEY environment variable is not set");
+    throw new Error("GEMINI_API_KEY environment variable is not set");
   }
-  return new OpenAI({ apiKey });
+  return new GoogleGenerativeAI(apiKey);
 }
 
 async function withRetry<T>(fn: () => Promise<T>, retries = MAX_RETRIES): Promise<T> {
@@ -48,13 +48,17 @@ export async function generateSummary(
     transcript.length > 15000 ? transcript.slice(0, 15000) + "…" : transcript;
 
   const result = await withRetry(async () => {
-    const response = await client.chat.completions.create({
-      model: "gpt-4o",
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: `You are an expert video analyst. Given a video transcript and title, produce a structured summary in JSON format. Be precise, factual, and comprehensive.
+    const model = client.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 2000,
+        responseMimeType: "application/json",
+      },
+    });
+
+    const response = await model.generateContent([
+      `You are an expert video analyst. Given a video transcript and title, produce a structured summary in JSON format. Be precise, factual, and comprehensive.
 
 Return JSON with this exact structure:
 {
@@ -75,20 +79,17 @@ Rules:
 - Divide the video into logical topic segments (3-8 segments)
 - Timestamps should be approximate based on position in transcript
 - Key points should be specific and informative, not vague
-- overview should be a concise high-level summary`,
-        },
-        {
-          role: "user",
-          content: `Video title: "${videoTitle}"\n\nTranscript:\n${truncatedTranscript}`,
-        },
-      ],
-      temperature: 0.3,
-      max_tokens: 2000,
-    });
+- overview should be a concise high-level summary
 
-    const content = response.choices[0]?.message?.content;
+Video title: "${videoTitle}"
+
+Transcript:
+${truncatedTranscript}`,
+    ]);
+
+    const content = response.response.text();
     if (!content) {
-      throw new Error("No response content from OpenAI");
+      throw new Error("No response content from Gemini");
     }
     return JSON.parse(content);
   });
@@ -123,13 +124,17 @@ export async function extractClaims(transcript: string): Promise<Claim[]> {
     transcript.length > 15000 ? transcript.slice(0, 15000) + "…" : transcript;
 
   const result = await withRetry(async () => {
-    const response = await client.chat.completions.create({
-      model: "gpt-4o",
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: `You are an expert fact-checker and claim analyst. Given a video transcript, extract the most important verifiable claims.
+    const model = client.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      generationConfig: {
+        temperature: 0.2,
+        maxOutputTokens: 3000,
+        responseMimeType: "application/json",
+      },
+    });
+
+    const response = await model.generateContent([
+      `You are an expert fact-checker and claim analyst. Given a video transcript, extract the most important verifiable claims.
 
 Return JSON with this exact structure:
 {
@@ -151,20 +156,15 @@ Rules:
 - confidence starts at 50 (neutral) — this is pre-verification confidence
 - Only extract clear, specific claims — not vague or trivial statements
 - Timestamps are approximate based on position in transcript
-- Paraphrase for clarity if needed, but stay faithful to the original meaning`,
-        },
-        {
-          role: "user",
-          content: `Transcript:\n${truncatedTranscript}`,
-        },
-      ],
-      temperature: 0.2,
-      max_tokens: 3000,
-    });
+- Paraphrase for clarity if needed, but stay faithful to the original meaning
 
-    const content = response.choices[0]?.message?.content;
+Transcript:
+${truncatedTranscript}`,
+    ]);
+
+    const content = response.response.text();
     if (!content) {
-      throw new Error("No response content from OpenAI");
+      throw new Error("No response content from Gemini");
     }
     return JSON.parse(content);
   });

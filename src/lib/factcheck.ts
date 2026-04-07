@@ -1,14 +1,14 @@
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { Claim, FactCheckedClaim, ClaimStatusValue, SourceReference } from "@/types";
 
 const MAX_CLAIMS_PER_BATCH = 15;
 
-function getClient(): OpenAI {
-  const apiKey = process.env.OPENAI_API_KEY;
+function getClient(): GoogleGenerativeAI {
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("OPENAI_API_KEY environment variable is not set");
+    throw new Error("GEMINI_API_KEY environment variable is not set");
   }
-  return new OpenAI({ apiKey });
+  return new GoogleGenerativeAI(apiKey);
 }
 
 interface FactCheckResult {
@@ -59,13 +59,17 @@ async function verifyClaim(claim: Claim): Promise<FactCheckResult> {
   const webEvidence = await searchForEvidence(claim.text);
 
   try {
-    const response = await client.chat.completions.create({
-      model: "gpt-4o",
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: `You are a rigorous fact-checker. Given a claim and any available web evidence, assess the claim's veracity.
+    const model = client.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      generationConfig: {
+        temperature: 0.1,
+        maxOutputTokens: 500,
+        responseMimeType: "application/json",
+      },
+    });
+
+    const response = await model.generateContent([
+      `You are a rigorous fact-checker. Given a claim and any available web evidence, assess the claim's veracity.
 
 Return JSON with this exact structure:
 {
@@ -92,20 +96,19 @@ Rules:
 - Provide 1-3 source references when possible
 - If web evidence is available, weigh it heavily
 - confidence should reflect certainty of your assessment
-- reasoning should be 1-3 sentences max`,
-        },
-        {
-          role: "user",
-          content: `Claim: "${claim.text}"\n\nClaim type: ${claim.type}\n\nWeb evidence:\n${webEvidence || "No web evidence available."}`,
-        },
-      ],
-      temperature: 0.1,
-      max_tokens: 500,
-    });
+- reasoning should be 1-3 sentences max
 
-    const content = response.choices[0]?.message?.content;
+Claim: "${claim.text}"
+
+Claim type: ${claim.type}
+
+Web evidence:
+${webEvidence || "No web evidence available."}`,
+    ]);
+
+    const content = response.response.text();
     if (!content) {
-      throw new Error("No response from OpenAI");
+      throw new Error("No response from Gemini");
     }
 
     const parsed = JSON.parse(content) as FactCheckResult;
