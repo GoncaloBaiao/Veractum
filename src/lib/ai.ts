@@ -3,9 +3,17 @@ import type { Summary, Claim, TimelineSegment } from "@/types";
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
+const GEMINI_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"] as const;
+
+interface GeminiLikeError {
+  status?: number;
+  statusText?: string;
+  errorDetails?: unknown;
+  message?: string;
+}
 
 function getClient(): GoogleGenerativeAI {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY environment variable is not set");
   }
@@ -18,13 +26,74 @@ async function withRetry<T>(fn: () => Promise<T>, retries = MAX_RETRIES): Promis
     try {
       return await fn();
     } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
+      lastError = formatGeminiError(error, "Gemini request failed.");
       if (attempt < retries - 1) {
         await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS * (attempt + 1)));
       }
     }
   }
-  throw lastError;
+  throw lastError ?? new Error("Gemini request failed.");
+}
+
+async function generateWithModelFallback(
+  client: GoogleGenerativeAI,
+  prompt: string,
+  config: { temperature: number; maxOutputTokens: number }
+): Promise<string> {
+  let lastError: Error | null = null;
+
+  for (const modelName of GEMINI_MODELS) {
+    try {
+      const model = client.getGenerativeModel({
+        model: modelName,
+        generationConfig: {
+          temperature: config.temperature,
+          maxOutputTokens: config.maxOutputTokens,
+          responseMimeType: "application/json",
+        },
+      });
+
+      const response = await model.generateContent([prompt]);
+      const content = response.response.text();
+
+      if (!content) {
+        throw new Error(`No response content from Gemini model ${modelName}.`);
+      }
+
+      return content;
+    } catch (error) {
+      const formatted = formatGeminiError(
+        error,
+        `Gemini request failed for model ${modelName}.`
+      );
+      lastError = formatted;
+
+      const err = error as GeminiLikeError;
+      const shouldTryNextModel = err?.status === 404 || err?.status === 429;
+
+      if (!shouldTryNextModel) {
+        throw formatted;
+      }
+    }
+  }
+
+  throw lastError ?? new Error("Gemini request failed for all configured models.");
+}
+
+function formatGeminiError(error: unknown, fallback: string): Error {
+  const err = error as GeminiLikeError;
+  const messagePart = typeof err?.message === "string" && err.message.trim()
+    ? err.message.trim()
+    : fallback;
+  const statusPart = typeof err?.status === "number"
+    ? `status: ${err.status}${err.statusText ? ` ${err.statusText}` : ""}`
+    : null;
+  const detailsPart = err?.errorDetails !== undefined
+    ? `errorDetails: ${JSON.stringify(err.errorDetails)}`
+    : null;
+
+  const composed = [messagePart, statusPart, detailsPart].filter(Boolean).join(" | ");
+  return new Error(composed || fallback);
 }
 
 const SEGMENT_COLORS = [
@@ -48,16 +117,8 @@ export async function generateSummary(
     transcript.length > 15000 ? transcript.slice(0, 15000) + "…" : transcript;
 
   const result = await withRetry(async () => {
-    const model = client.getGenerativeModel({
-      model: "gemini-1.5-flash",
-      generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 2000,
-        responseMimeType: "application/json",
-      },
-    });
-
-    const response = await model.generateContent([
+    const content = await generateWithModelFallback(
+      client,
       `You are an expert video analyst. Given a video transcript and title, produce a structured summary in JSON format. Be precise, factual, and comprehensive.
 
 Return JSON with this exact structure:
@@ -85,12 +146,9 @@ Video title: "${videoTitle}"
 
 Transcript:
 ${truncatedTranscript}`,
-    ]);
+      { temperature: 0.3, maxOutputTokens: 2000 }
+    );
 
-    const content = response.response.text();
-    if (!content) {
-      throw new Error("No response content from Gemini");
-    }
     return JSON.parse(content);
   });
 
@@ -124,16 +182,8 @@ export async function extractClaims(transcript: string): Promise<Claim[]> {
     transcript.length > 15000 ? transcript.slice(0, 15000) + "…" : transcript;
 
   const result = await withRetry(async () => {
-    const model = client.getGenerativeModel({
-      model: "gemini-1.5-flash",
-      generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: 3000,
-        responseMimeType: "application/json",
-      },
-    });
-
-    const response = await model.generateContent([
+    const content = await generateWithModelFallback(
+      client,
       `You are an expert fact-checker and claim analyst. Given a video transcript, extract the most important verifiable claims.
 
 Return JSON with this exact structure:
@@ -160,12 +210,9 @@ Rules:
 
 Transcript:
 ${truncatedTranscript}`,
-    ]);
+      { temperature: 0.2, maxOutputTokens: 3000 }
+    );
 
-    const content = response.response.text();
-    if (!content) {
-      throw new Error("No response content from Gemini");
-    }
     return JSON.parse(content);
   });
 
