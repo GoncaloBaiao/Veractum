@@ -1,7 +1,9 @@
 /**
  * Transcription module — fetches captions from YouTube or falls back to
- * Whisper-based transcription for videos without captions.
+ * youtube-transcript extraction for videos without captions in the primary path.
  */
+
+import { YoutubeTranscript } from "youtube-transcript";
 
 interface TranscriptSegment {
   text: string;
@@ -14,11 +16,14 @@ interface TranscriptResponse {
   segments: TranscriptSegment[];
 }
 
+const NO_CAPTIONS_FRIENDLY_MESSAGE =
+  "This video does not have captions available. Please try a video with subtitles enabled.";
+
 /**
  * Fetch the transcript for a YouTube video.
  * Strategy:
  *   1. Try to fetch auto-generated / manual captions via the innertube API
- *   2. Fall back to Whisper transcription (requires audio download)
+ *   2. Fall back to youtube-transcript extraction
  *
  * For the MVP, this uses a lightweight caption scraping approach that
  * doesn't require OAuth credentials.
@@ -31,10 +36,52 @@ export async function fetchTranscript(videoId: string): Promise<TranscriptRespon
     return captions;
   }
 
-  // Whisper fallback — not yet implemented for MVP
-  throw new Error(
-    "No captions available for this video. Whisper transcription is not yet enabled."
-  );
+  // Fallback: youtube-transcript library
+  const libraryTranscript = await fetchWithYoutubeTranscript(videoId);
+  if (libraryTranscript) {
+    return libraryTranscript;
+  }
+
+  // Friendly response so analysis can fail gracefully without crashing pipeline
+  return {
+    transcript: NO_CAPTIONS_FRIENDLY_MESSAGE,
+    segments: [
+      {
+        text: NO_CAPTIONS_FRIENDLY_MESSAGE,
+        start: 0,
+        duration: 0,
+      },
+    ],
+  };
+}
+
+async function fetchWithYoutubeTranscript(videoId: string): Promise<TranscriptResponse | null> {
+  try {
+    const rows = await YoutubeTranscript.fetchTranscript(videoId);
+
+    if (!rows || rows.length === 0) {
+      return null;
+    }
+
+    const segments: TranscriptSegment[] = rows
+      .map((row) => ({
+        text: row.text.trim(),
+        start: row.offset,
+        duration: row.duration,
+      }))
+      .filter((segment) => segment.text.length > 0);
+
+    if (segments.length === 0) {
+      return null;
+    }
+
+    return {
+      transcript: segments.map((segment) => segment.text).join(" "),
+      segments,
+    };
+  } catch {
+    return null;
+  }
 }
 
 async function fetchYouTubeCaptions(videoId: string): Promise<TranscriptResponse | null> {

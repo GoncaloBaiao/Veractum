@@ -65,8 +65,33 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       },
     });
 
+    // Validate transcript before background processing so user gets immediate 422 feedback.
+    let transcript: string;
+    try {
+      const transcriptResult = await fetchTranscript(videoId);
+      transcript = transcriptResult.transcript;
+    } catch (error) {
+      const message = getErrorMessage(
+        error,
+        "Failed to fetch transcript for this video. Please try another video with subtitles enabled."
+      );
+
+      await prisma.analysis.update({
+        where: { id: analysis.id },
+        data: {
+          status: "FAILED",
+          summary: { error: message },
+        },
+      });
+
+      return NextResponse.json(
+        { success: false, error: message },
+        { status: 422 }
+      );
+    }
+
     // Process in background (non-blocking)
-    processAnalysis(analysis.id, videoId, metadata.title).catch(console.error);
+    processAnalysis(analysis.id, transcript, metadata.title).catch(console.error);
 
     return NextResponse.json(
       {
@@ -200,23 +225,24 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 }
 
-async function processAnalysis(analysisId: string, videoId: string, videoTitle: string): Promise<void> {
+async function processAnalysis(
+  analysisId: string,
+  transcript: string,
+  videoTitle: string
+): Promise<void> {
   const prisma = getPrismaClient();
   if (!prisma) {
     return;
   }
 
   try {
-    // Step 1: Fetch transcript
-    const { transcript } = await fetchTranscript(videoId);
-
-    // Step 2: Generate summary
+    // Step 1: Generate summary
     const summary = await generateSummary(transcript, videoTitle);
 
-    // Step 3: Extract claims
+    // Step 2: Extract claims
     const claims = await extractClaims(transcript);
 
-    // Step 4: Fact-check claims
+    // Step 3: Fact-check claims
     const factCheckedClaims = await factCheckClaims(claims);
 
     // Save results
@@ -246,10 +272,26 @@ async function processAnalysis(analysisId: string, videoId: string, videoTitle: 
   } catch (error) {
     console.error("Analysis processing failed:", error);
     if (!isDatabaseUnavailableError(error)) {
+      const message = getErrorMessage(
+        error,
+        "Analysis failed during processing. Please try another video."
+      );
+
       await prisma.analysis.update({
         where: { id: analysisId },
-        data: { status: "FAILED" },
+        data: {
+          status: "FAILED",
+          summary: { error: message },
+        },
       });
     }
   }
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  return fallback;
 }
