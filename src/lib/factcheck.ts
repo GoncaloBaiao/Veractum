@@ -1,22 +1,15 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import type { Claim, FactCheckedClaim, ClaimStatusValue, SourceReference } from "@/types";
 
 const MAX_CLAIMS_PER_BATCH = 15;
-const GEMINI_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"] as const;
+const GEMINI_MODEL = "gemini-2.0-flash";
 
-interface GeminiLikeError {
-  status?: number;
-  statusText?: string;
-  errorDetails?: unknown;
-  message?: string;
-}
-
-function getClient(): GoogleGenerativeAI {
+function getClient(): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY environment variable is not set");
   }
-  return new GoogleGenerativeAI(apiKey);
+  return new GoogleGenAI({ apiKey });
 }
 
 interface FactCheckResult {
@@ -24,64 +17,6 @@ interface FactCheckResult {
   confidence: number;
   reasoning: string;
   sources: Array<{ title: string; url: string; domain: string }>;
-}
-
-function formatGeminiError(error: unknown, fallback: string): Error {
-  const err = error as GeminiLikeError;
-  const messagePart = typeof err?.message === "string" && err.message.trim()
-    ? err.message.trim()
-    : fallback;
-  const statusPart = typeof err?.status === "number"
-    ? `status: ${err.status}${err.statusText ? ` ${err.statusText}` : ""}`
-    : null;
-  const detailsPart = err?.errorDetails !== undefined
-    ? `errorDetails: ${JSON.stringify(err.errorDetails)}`
-    : null;
-
-  return new Error([messagePart, statusPart, detailsPart].filter(Boolean).join(" | ") || fallback);
-}
-
-async function generateWithModelFallback(
-  client: GoogleGenerativeAI,
-  prompt: string
-): Promise<string> {
-  let lastError: Error | null = null;
-
-  for (const modelName of GEMINI_MODELS) {
-    try {
-      const model = client.getGenerativeModel({
-        model: modelName,
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 500,
-          responseMimeType: "application/json",
-        },
-      });
-
-      const response = await model.generateContent([prompt]);
-      const content = response.response.text();
-
-      if (!content) {
-        throw new Error(`No response from Gemini model ${modelName}.`);
-      }
-
-      return content;
-    } catch (error) {
-      const formatted = formatGeminiError(
-        error,
-        `Gemini fact-check request failed for model ${modelName}.`
-      );
-      lastError = formatted;
-
-      const err = error as GeminiLikeError;
-      const shouldTryNextModel = err?.status === 404 || err?.status === 429;
-      if (!shouldTryNextModel) {
-        throw formatted;
-      }
-    }
-  }
-
-  throw lastError ?? new Error("Gemini fact-check request failed for all configured models.");
 }
 
 /**
@@ -125,9 +60,9 @@ async function verifyClaim(claim: Claim): Promise<FactCheckResult> {
   const webEvidence = await searchForEvidence(claim.text);
 
   try {
-    const content = await generateWithModelFallback(
-      client,
-      `You are a rigorous fact-checker. Given a claim and any available web evidence, assess the claim's veracity.
+    const response = await client.models.generateContent({
+      model: GEMINI_MODEL,
+      contents: `You are a rigorous fact-checker. Given a claim and any available web evidence, assess the claim's veracity.
 
 Return JSON with this exact structure:
 {
@@ -161,8 +96,18 @@ Claim: "${claim.text}"
 Claim type: ${claim.type}
 
 Web evidence:
-${webEvidence || "No web evidence available."}`
-    );
+${webEvidence || "No web evidence available."}`,
+      config: {
+        temperature: 0.1,
+        maxOutputTokens: 500,
+        responseMimeType: "application/json",
+      },
+    });
+
+    const content = response.text;
+    if (!content) {
+      throw new Error("No response from Gemini.");
+    }
 
     const parsed = JSON.parse(content) as FactCheckResult;
 
@@ -177,15 +122,14 @@ ${webEvidence || "No web evidence available."}`
       })),
     };
   } catch (error) {
-    const detailedError = formatGeminiError(
-      error,
-      "Unable to verify this claim due to a processing error."
-    );
+    const message = error instanceof Error
+      ? error.message
+      : "Unable to verify this claim due to a processing error.";
 
     return {
       status: "insufficient",
       confidence: 30,
-      reasoning: detailedError.message,
+      reasoning: message,
       sources: [],
     };
   }
