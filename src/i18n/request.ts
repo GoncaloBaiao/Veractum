@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { getRequestConfig } from "next-intl/server";
 
-export const locales = ["en", "pt", "es", "fr", "de", "it", "zh", "ja"] as const;
+export const locales = ["en", "pt", "es", "fr", "de", "it", "zh", "ja", "ru"] as const;
 export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = "en";
 
@@ -14,6 +14,7 @@ export const localeNames: Record<Locale, string> = {
   it: "Italiano",
   zh: "中文",
   ja: "日本語",
+  ru: "Русский",
 };
 
 export const localeFlags: Record<Locale, string> = {
@@ -25,6 +26,7 @@ export const localeFlags: Record<Locale, string> = {
   it: "🇮🇹",
   zh: "🇨🇳",
   ja: "🇯🇵",
+  ru: "🇷🇺",
 };
 
 export default getRequestConfig(async () => {

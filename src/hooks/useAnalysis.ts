@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import type { AnalysisStatus, ApiResponse, AnalyzeResponse } from "@/types";
 
 interface UseAnalysisReturn {
@@ -14,6 +15,7 @@ interface UseAnalysisReturn {
 
 export function useAnalysis(): UseAnalysisReturn {
   const router = useRouter();
+  const locale = useLocale();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<AnalysisStatus | null>(null);
@@ -34,7 +36,7 @@ export function useAnalysis(): UseAnalysisReturn {
         const response = await fetch("/api/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url }),
+          body: JSON.stringify({ url, locale }),
         });
 
         const data: ApiResponse<AnalyzeResponse> = await response.json();
@@ -54,7 +56,7 @@ export function useAnalysis(): UseAnalysisReturn {
         setIsLoading(false);
       }
     },
-    [router]
+    [router, locale]
   );
 
   return { isLoading, error, status, submit, reset };

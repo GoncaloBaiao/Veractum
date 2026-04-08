@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
+import { LOCALE_LANGUAGE_MAP } from "@/lib/ai";
 import type { Claim, FactCheckedClaim, ClaimStatusValue, SourceReference } from "@/types";
 
 const MAX_CLAIMS_PER_BATCH = 15;
@@ -25,7 +26,7 @@ interface FactCheckResult {
  * Fact-check an array of claims using OpenAI and (optionally) web search.
  * Opinions are auto-classified without web search.
  */
-export async function factCheckClaims(claims: Claim[]): Promise<FactCheckedClaim[]> {
+export async function factCheckClaims(claims: Claim[], locale: string = "en"): Promise<FactCheckedClaim[]> {
   const batch = claims.slice(0, MAX_CLAIMS_PER_BATCH);
   const results: FactCheckedClaim[] = [];
 
@@ -42,7 +43,7 @@ export async function factCheckClaims(claims: Claim[]): Promise<FactCheckedClaim
       continue;
     }
 
-    const factCheckResult = await verifyClaim(claim);
+    const factCheckResult = await verifyClaim(claim, locale);
     results.push({
       ...claim,
       status: factCheckResult.status,
@@ -55,8 +56,9 @@ export async function factCheckClaims(claims: Claim[]): Promise<FactCheckedClaim
   return results;
 }
 
-async function verifyClaim(claim: Claim): Promise<FactCheckResult> {
+async function verifyClaim(claim: Claim, locale: string = "en"): Promise<FactCheckResult> {
   const client = getClient();
+  const language = LOCALE_LANGUAGE_MAP[locale] || "English";
 
   // Attempt web search via Tavily for supporting evidence
   const webEvidence = await searchForEvidence(claim.text);
@@ -66,7 +68,9 @@ async function verifyClaim(claim: Claim): Promise<FactCheckResult> {
 
     const response = await client.models.generateContent({
       model: GEMINI_MODEL,
-      contents: `You are a rigorous fact-checker. Analyze the claim below using the provided web evidence and your own knowledge.
+      contents: `Respond entirely in ${language}. All text fields in your response (reasoning, source titles) must be in ${language}.
+
+You are a rigorous fact-checker. Analyze the claim below using the provided web evidence and your own knowledge.
 
 CLAIM: "${claim.text}"
 CLAIM TYPE: ${claim.type}
@@ -89,10 +93,10 @@ IMPORTANT:
 - ${hasEvidence ? "Web evidence IS available above — analyze it carefully before deciding. Do NOT default to 'insufficient' when evidence exists." : "No web evidence was found, but you may still assess common factual claims using your training knowledge. Only use 'insufficient' if you genuinely cannot determine the answer."}
 - The confidence score (0-100) must reflect how certain you are.  A higher number means more certainty.
 - Extract source references from the web evidence when available.  Include the title, full URL, and domain.
-- Keep reasoning to 1-3 clear sentences explaining your verdict.`,
+- Keep the reasoning field under 300 characters. Be concise: 1-2 short sentences maximum.`,
       config: {
         temperature: 0.1,
-        maxOutputTokens: 2048,
+        maxOutputTokens: 4096,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,

@@ -4,12 +4,13 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, AlertCircle } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { AnalysisLoader } from "@/components/AnalysisLoader";
 import type { ApiResponse, AnalyzeResponse } from "@/types";
 
 function NewAnalysisContent() {
   const t = useTranslations("analysis");
+  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const url = searchParams.get("url");
@@ -29,7 +30,7 @@ function NewAnalysisContent() {
         const response = await fetch("/api/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url }),
+          body: JSON.stringify({ url, locale }),
         });
 
         const data: ApiResponse<AnalyzeResponse> = await response.json();

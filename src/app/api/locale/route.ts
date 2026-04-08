@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const VALID_LOCALES = new Set(["en", "pt", "es", "fr", "de", "it", "zh", "ja"]);
+const VALID_LOCALES = new Set(["en", "pt", "es", "fr", "de", "it", "zh", "ja", "ru"]);
 
 export async function POST(request: NextRequest) {
   const body = await request.json();

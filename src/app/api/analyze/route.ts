@@ -23,6 +23,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
   try {
     const body = await request.json();
     const url: unknown = body?.url;
+    const locale: string = typeof body?.locale === "string" ? body.locale : "en";
 
     if (typeof url !== "string" || !url.trim()) {
       return NextResponse.json(
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
     }
 
     // Process in background (non-blocking)
-    processAnalysis(analysis.id, transcript, metadata.title).catch(console.error);
+    processAnalysis(analysis.id, transcript, metadata.title, locale).catch(console.error);
 
     return NextResponse.json(
       {
@@ -228,7 +229,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 async function processAnalysis(
   analysisId: string,
   transcript: string,
-  videoTitle: string
+  videoTitle: string,
+  locale: string
 ): Promise<void> {
   const prisma = getPrismaClient();
   if (!prisma) {
@@ -237,13 +239,13 @@ async function processAnalysis(
 
   try {
     // Step 1: Generate summary
-    const summary = await generateSummary(transcript, videoTitle);
+    const summary = await generateSummary(transcript, videoTitle, locale);
 
     // Step 2: Extract claims
-    const claims = await extractClaims(transcript);
+    const claims = await extractClaims(transcript, locale);
 
     // Step 3: Fact-check claims
-    const factCheckedClaims = await factCheckClaims(claims);
+    const factCheckedClaims = await factCheckClaims(claims, locale);
 
     // Save results
     await prisma.$transaction([

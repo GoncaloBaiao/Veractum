@@ -5,6 +5,18 @@ const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
 const GEMINI_MODEL = "gemini-2.5-flash";
 
+export const LOCALE_LANGUAGE_MAP: Record<string, string> = {
+  en: "English",
+  pt: "Portuguese",
+  es: "Spanish",
+  fr: "French",
+  de: "German",
+  it: "Italian",
+  zh: "Chinese",
+  ja: "Japanese",
+  ru: "Russian",
+};
+
 function getClient(): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) {
@@ -43,9 +55,11 @@ const SEGMENT_COLORS = [
 
 export async function generateSummary(
   transcript: string,
-  videoTitle: string
+  videoTitle: string,
+  locale: string = "en"
 ): Promise<Summary> {
   const client = getClient();
+  const language = LOCALE_LANGUAGE_MAP[locale] || "English";
 
   const truncatedTranscript =
     transcript.length > 15000 ? transcript.slice(0, 15000) + "…" : transcript;
@@ -53,7 +67,9 @@ export async function generateSummary(
   const result = await withRetry(async () => {
     const response = await client.models.generateContent({
       model: GEMINI_MODEL,
-      contents: `You are an expert video analyst. Given a video transcript and title, produce a structured summary in JSON format. Be precise, factual, and comprehensive.
+      contents: `Respond entirely in ${language}. All text fields in your response must be in ${language}.
+
+You are an expert video analyst. Given a video transcript and title, produce a structured summary in JSON format. Be precise, factual, and comprehensive.
 
 Return JSON with this exact structure:
 {
@@ -139,8 +155,9 @@ ${truncatedTranscript}`,
   };
 }
 
-export async function extractClaims(transcript: string): Promise<Claim[]> {
+export async function extractClaims(transcript: string, locale: string = "en"): Promise<Claim[]> {
   const client = getClient();
+  const language = LOCALE_LANGUAGE_MAP[locale] || "English";
 
   const truncatedTranscript =
     transcript.length > 15000 ? transcript.slice(0, 15000) + "…" : transcript;
@@ -148,7 +165,9 @@ export async function extractClaims(transcript: string): Promise<Claim[]> {
   const result = await withRetry(async () => {
     const response = await client.models.generateContent({
       model: GEMINI_MODEL,
-      contents: `You are an expert fact-checker and claim analyst. Given a video transcript, extract the most important verifiable claims.
+      contents: `Respond entirely in ${language}. All text fields in your response must be in ${language}.
+
+You are an expert fact-checker and claim analyst. Given a video transcript, extract the most important verifiable claims.
 
 Return JSON with this exact structure:
 {

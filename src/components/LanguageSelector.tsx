@@ -14,6 +14,7 @@ const LOCALES = [
   { code: "it", flag: "🇮🇹", name: "Italiano" },
   { code: "zh", flag: "🇨🇳", name: "中文" },
   { code: "ja", flag: "🇯🇵", name: "日本語" },
+  { code: "ru", flag: "🇷🇺", name: "Русский" },
 ] as const;
 
 export function LanguageSelector() {
