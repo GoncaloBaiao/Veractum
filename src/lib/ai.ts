@@ -3,7 +3,7 @@ import type { Summary, Claim, TimelineSegment } from "@/types";
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
-const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_MODEL = "gemini-2.5-flash";
 
 function getClient(): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
@@ -26,6 +26,49 @@ async function withRetry<T>(fn: () => Promise<T>, retries = MAX_RETRIES): Promis
     }
   }
   throw lastError ?? new Error("Gemini request failed.");
+}
+
+/**
+ * Strip markdown fences and attempt to repair truncated JSON.
+ */
+function cleanAndParseJson<T = unknown>(raw: string): T {
+  let text = raw.trim();
+
+  // Strip markdown code fences
+  text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "");
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Attempt to repair truncated JSON
+    const repaired = repairTruncatedJson(text);
+    return JSON.parse(repaired);
+  }
+}
+
+function repairTruncatedJson(text: string): string {
+  // Close any unterminated string
+  const quoteCount = (text.match(/(?<!\\)"/g) || []).length;
+  if (quoteCount % 2 !== 0) {
+    text += '"';
+  }
+
+  // Remove trailing comma before we close brackets
+  text = text.replace(/,\s*$/, "");
+
+  // Count open/close brackets and close any that are open
+  const opens = { "{": 0, "[": 0 };
+  const closes: Record<string, "{" | "["> = { "}": "{", "]": "[" };
+  for (const ch of text) {
+    if (ch === "{" || ch === "[") opens[ch]++;
+    if ((ch === "}" || ch === "]") && opens[closes[ch]] > 0) opens[closes[ch]]--;
+  }
+
+  // Close innermost open brackets first: arrays before objects
+  for (let i = 0; i < opens["["]; i++) text += "]";
+  for (let i = 0; i < opens["{"]; i++) text += "}";
+
+  return text;
 }
 
 const SEGMENT_COLORS = [
@@ -80,7 +123,7 @@ Transcript:
 ${truncatedTranscript}`,
       config: {
         temperature: 0.3,
-        maxOutputTokens: 2000,
+        maxOutputTokens: 4096,
         responseMimeType: "application/json",
       },
     });
@@ -90,7 +133,7 @@ ${truncatedTranscript}`,
       throw new Error("No response content from Gemini.");
     }
 
-    return JSON.parse(content);
+    return cleanAndParseJson<Record<string, unknown>>(content);
   });
 
   const segments: TimelineSegment[] = (
@@ -140,7 +183,7 @@ Return JSON with this exact structure:
 }
 
 Rules:
-- Extract up to 15 of the most important and verifiable claims
+- Extract up to 10 of the most important and verifiable claims
 - "factual" = a statement that can be verified as true/false with evidence
 - "opinion" = a subjective statement or value judgment
 - "prediction" = a statement about the future
@@ -153,7 +196,7 @@ Transcript:
 ${truncatedTranscript}`,
       config: {
         temperature: 0.2,
-        maxOutputTokens: 3000,
+        maxOutputTokens: 4096,
         responseMimeType: "application/json",
       },
     });
@@ -163,7 +206,7 @@ ${truncatedTranscript}`,
       throw new Error("No response content from Gemini.");
     }
 
-    return JSON.parse(content);
+    return cleanAndParseJson<Record<string, unknown>>(content);
   });
 
   const claims: Claim[] = (

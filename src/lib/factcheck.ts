@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import type { Claim, FactCheckedClaim, ClaimStatusValue, SourceReference } from "@/types";
 
 const MAX_CLAIMS_PER_BATCH = 15;
-const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_MODEL = "gemini-2.5-flash";
 
 function getClient(): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
@@ -17,6 +17,45 @@ interface FactCheckResult {
   confidence: number;
   reasoning: string;
   sources: Array<{ title: string; url: string; domain: string }>;
+}
+
+/**
+ * Strip markdown fences and attempt to repair truncated JSON.
+ */
+function cleanAndParseJson<T = unknown>(raw: string): T {
+  let text = raw.trim();
+
+  // Strip markdown code fences
+  text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "");
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Attempt to repair truncated JSON
+    const repaired = repairTruncatedJson(text);
+    return JSON.parse(repaired);
+  }
+}
+
+function repairTruncatedJson(text: string): string {
+  const quoteCount = (text.match(/(?<!\\)"/g) || []).length;
+  if (quoteCount % 2 !== 0) {
+    text += '"';
+  }
+
+  text = text.replace(/,\s*$/, "");
+
+  const opens = { "{": 0, "[": 0 };
+  const closes: Record<string, "{" | "["> = { "}": "{", "]": "[" };
+  for (const ch of text) {
+    if (ch === "{" || ch === "[") opens[ch]++;
+    if ((ch === "}" || ch === "]") && opens[closes[ch]] > 0) opens[closes[ch]]--;
+  }
+
+  for (let i = 0; i < opens["["]; i++) text += "]";
+  for (let i = 0; i < opens["{"]; i++) text += "}";
+
+  return text;
 }
 
 /**
@@ -99,7 +138,7 @@ Web evidence:
 ${webEvidence || "No web evidence available."}`,
       config: {
         temperature: 0.1,
-        maxOutputTokens: 500,
+        maxOutputTokens: 1024,
         responseMimeType: "application/json",
       },
     });
@@ -109,7 +148,7 @@ ${webEvidence || "No web evidence available."}`,
       throw new Error("No response from Gemini.");
     }
 
-    const parsed = JSON.parse(content) as FactCheckResult;
+    const parsed = cleanAndParseJson<FactCheckResult>(content);
 
     return {
       status: parsed.status,
