@@ -1,25 +1,30 @@
+"use client";
+
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { BrandLogo } from "@/components/BrandLogo";
 
-const FOOTER_LINKS = {
-  Product: [
-    { label: "How it Works", href: "/#how-it-works" },
-    { label: "Pricing", href: "/pricing" },
-    { label: "Example Analysis", href: "/#demo" },
-  ],
-  Resources: [
-    { label: "Documentation", href: "#" },
-    { label: "API Reference", href: "#" },
-    { label: "Changelog", href: "#" },
-  ],
-  Legal: [
-    { label: "Privacy Policy", href: "#" },
-    { label: "Terms of Service", href: "#" },
-    { label: "Cookie Policy", href: "#" },
-  ],
-} as const;
-
 export function Footer() {
+  const t = useTranslations("footer");
+
+  const footerLinks = {
+    [t("product")]: [
+      { label: t("howItWorks"), href: "/#how-it-works" },
+      { label: t("pricing"), href: "/pricing" },
+      { label: t("exampleAnalysis"), href: "/#demo" },
+    ],
+    [t("resources")]: [
+      { label: t("documentation"), href: "#" },
+      { label: t("apiReference"), href: "#" },
+      { label: t("changelog"), href: "#" },
+    ],
+    [t("legal")]: [
+      { label: t("privacyPolicy"), href: "#" },
+      { label: t("termsOfService"), href: "#" },
+      { label: t("cookiePolicy"), href: "#" },
+    ],
+  };
+
   return (
     <footer className="border-t border-gray-800/50 bg-[#0a0a0f]">
       <div className="page-container py-16">
@@ -31,14 +36,14 @@ export function Footer() {
               <span className="text-lg font-bold tracking-tight">Veractum</span>
             </Link>
             <p className="text-sm text-gray-500 leading-relaxed">
-              See clearly. Think freely.
+              {t("tagline")}
               <br />
-              AI-powered video analysis and fact-checking.
+              {t("description")}
             </p>
           </div>
 
           {/* Link columns */}
-          {Object.entries(FOOTER_LINKS).map(([category, links]) => (
+          {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
               <h3 className="text-sm font-semibold text-gray-300 mb-4">{category}</h3>
               <ul className="space-y-3">
@@ -60,10 +65,10 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-16 pt-8 border-t border-gray-800/50 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-xs text-gray-600">
-            &copy; {new Date().getFullYear()} Veractum. All rights reserved.
+            {t("copyright", { year: new Date().getFullYear() })}
           </p>
           <p className="text-xs text-gray-600">
-            From Latin <em>verus</em> (true) + <em>factum</em> (deed) — the truth of what was said.
+            {t("etymology", { verus: "verus", factum: "factum" })}
           </p>
         </div>
       </div>

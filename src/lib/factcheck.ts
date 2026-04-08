@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import type { Claim, FactCheckedClaim, ClaimStatusValue, SourceReference } from "@/types";
 
 const MAX_CLAIMS_PER_BATCH = 15;
@@ -19,44 +19,7 @@ interface FactCheckResult {
   sources: Array<{ title: string; url: string; domain: string }>;
 }
 
-/**
- * Strip markdown fences and attempt to repair truncated JSON.
- */
-function cleanAndParseJson<T = unknown>(raw: string): T {
-  let text = raw.trim();
 
-  // Strip markdown code fences
-  text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "");
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    // Attempt to repair truncated JSON
-    const repaired = repairTruncatedJson(text);
-    return JSON.parse(repaired);
-  }
-}
-
-function repairTruncatedJson(text: string): string {
-  const quoteCount = (text.match(/(?<!\\)"/g) || []).length;
-  if (quoteCount % 2 !== 0) {
-    text += '"';
-  }
-
-  text = text.replace(/,\s*$/, "");
-
-  const opens = { "{": 0, "[": 0 };
-  const closes: Record<string, "{" | "["> = { "}": "{", "]": "[" };
-  for (const ch of text) {
-    if (ch === "{" || ch === "[") opens[ch]++;
-    if ((ch === "}" || ch === "]") && opens[closes[ch]] > 0) opens[closes[ch]]--;
-  }
-
-  for (let i = 0; i < opens["["]; i++) text += "]";
-  for (let i = 0; i < opens["{"]; i++) text += "}";
-
-  return text;
-}
 
 /**
  * Fact-check an array of claims using OpenAI and (optionally) web search.
@@ -99,47 +62,59 @@ async function verifyClaim(claim: Claim): Promise<FactCheckResult> {
   const webEvidence = await searchForEvidence(claim.text);
 
   try {
+    const hasEvidence = webEvidence !== null && webEvidence.length > 0;
+
     const response = await client.models.generateContent({
       model: GEMINI_MODEL,
-      contents: `You are a rigorous fact-checker. Given a claim and any available web evidence, assess the claim's veracity.
+      contents: `You are a rigorous fact-checker. Analyze the claim below using the provided web evidence and your own knowledge.
 
-Return JSON with this exact structure:
-{
-  "status": "supported" | "contested" | "opinion" | "insufficient",
-  "confidence": 0-100,
-  "reasoning": "Brief explanation of your assessment",
-  "sources": [
-    {
-      "title": "Source page title",
-      "url": "https://...",
-      "domain": "example.com"
-    }
-  ]
-}
+CLAIM: "${claim.text}"
+CLAIM TYPE: ${claim.type}
 
-Status definitions:
-- "supported": Strong evidence confirms the claim (confidence 70-100)
-- "contested": Evidence contradicts or significantly questions the claim (confidence 30-70)
-- "opinion": The claim is subjective and cannot be verified
-- "insufficient": Not enough evidence to make a determination (confidence 20-50)
+WEB SEARCH RESULTS:
+${hasEvidence ? webEvidence : "No web search results were found for this claim."}
 
-Rules:
-- Be conservative — only mark "supported" with strong evidence
-- Provide 1-3 source references when possible
-- If web evidence is available, weigh it heavily
-- confidence should reflect certainty of your assessment
-- reasoning should be 1-3 sentences max
+INSTRUCTIONS:
+1. Carefully read ALL the web evidence provided above.
+2. Cross-reference the claim against the evidence and your own knowledge.
+3. Determine the most accurate verdict.
 
-Claim: "${claim.text}"
+VERDICT RULES:
+- "supported" (confidence 70-100): The evidence clearly confirms the claim. Use this when web sources directly support it.
+- "contested" (confidence 30-70): Evidence contradicts or raises significant doubts about the claim.
+- "insufficient" (confidence 20-50): Not enough evidence either way. ONLY use this as a last resort when no evidence exists at all.
+- "opinion": The claim is purely subjective and cannot be objectively verified.
 
-Claim type: ${claim.type}
-
-Web evidence:
-${webEvidence || "No web evidence available."}`,
+IMPORTANT:
+- ${hasEvidence ? "Web evidence IS available above — analyze it carefully before deciding. Do NOT default to 'insufficient' when evidence exists." : "No web evidence was found, but you may still assess common factual claims using your training knowledge. Only use 'insufficient' if you genuinely cannot determine the answer."}
+- The confidence score (0-100) must reflect how certain you are.  A higher number means more certainty.
+- Extract source references from the web evidence when available.  Include the title, full URL, and domain.
+- Keep reasoning to 1-3 clear sentences explaining your verdict.`,
       config: {
         temperature: 0.1,
-        maxOutputTokens: 1024,
+        maxOutputTokens: 2048,
         responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            status: { type: Type.STRING, enum: ["supported", "contested", "opinion", "insufficient"] },
+            confidence: { type: Type.NUMBER },
+            reasoning: { type: Type.STRING },
+            sources: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING },
+                  url: { type: Type.STRING },
+                  domain: { type: Type.STRING },
+                },
+                required: ["title", "url", "domain"],
+              },
+            },
+          },
+          required: ["status", "confidence", "reasoning", "sources"],
+        },
       },
     });
 
@@ -148,7 +123,7 @@ ${webEvidence || "No web evidence available."}`,
       throw new Error("No response from Gemini.");
     }
 
-    const parsed = cleanAndParseJson<FactCheckResult>(content);
+    const parsed = JSON.parse(content) as FactCheckResult;
 
     return {
       status: parsed.status,
@@ -191,8 +166,8 @@ async function searchForEvidence(claimText: string): Promise<string | null> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         api_key: tavilyKey,
-        query: `Is this true: ${claimText}`,
-        search_depth: "basic",
+        query: `fact check: ${claimText}`,
+        search_depth: "advanced",
         max_results: 5,
         include_answer: true,
       }),

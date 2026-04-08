@@ -1,7 +1,11 @@
+"use client";
+
 import { FileText } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { SummaryCardProps } from "@/types";
 
 export function SummaryCard({ summary }: SummaryCardProps) {
+  const t = useTranslations("analysis");
   return (
     <section
       className="bg-gray-900 border-2 border-gray-800 rounded-2xl p-6 sm:p-8"
@@ -12,7 +16,7 @@ export function SummaryCard({ summary }: SummaryCardProps) {
           <FileText size={20} className="text-amber-400" />
         </div>
         <h2 id="summary-heading" className="text-xl font-bold text-gray-100">
-          Summary
+          {t("summary")}
         </h2>
       </div>
 
@@ -22,7 +26,7 @@ export function SummaryCard({ summary }: SummaryCardProps) {
 
       <div className="space-y-3">
         <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
-          Key Points
+          {t("keyPoints")}
         </h3>
         <ul className="space-y-3" role="list">
           {summary.keyPoints.map((point, index) => (

@@ -3,10 +3,12 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Loader2, AlertCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { VideoInputProps } from "@/types";
 import { isValidYouTubeUrl } from "@/lib/utils";
 
 export function VideoInput({ onSubmit, isLoading = false }: VideoInputProps) {
+  const t = useTranslations("videoInput");
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isFocused, setIsFocused] = useState(false);
@@ -18,12 +20,12 @@ export function VideoInput({ onSubmit, isLoading = false }: VideoInputProps) {
 
       const trimmed = url.trim();
       if (!trimmed) {
-        setError("Please enter a YouTube URL.");
+        setError(t("errorEmpty"));
         return;
       }
 
       if (!isValidYouTubeUrl(trimmed)) {
-        setError("Invalid YouTube URL. Please use a youtube.com/watch or youtu.be link.");
+        setError(t("errorInvalid"));
         return;
       }
 
@@ -60,7 +62,7 @@ export function VideoInput({ onSubmit, isLoading = false }: VideoInputProps) {
             }}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            placeholder="Paste a YouTube link…"
+            placeholder={t("placeholder")}
             disabled={isLoading}
             className="w-full bg-transparent text-gray-100 placeholder-gray-500 pl-14 pr-36 py-5 rounded-2xl focus:outline-none text-base sm:text-lg"
             aria-label="YouTube video URL"
@@ -76,7 +78,7 @@ export function VideoInput({ onSubmit, isLoading = false }: VideoInputProps) {
             {isLoading ? (
               <Loader2 size={18} className="animate-spin" />
             ) : (
-              "Analyse"
+              t("analyse")
             )}
           </button>
         </div>
@@ -99,7 +101,7 @@ export function VideoInput({ onSubmit, isLoading = false }: VideoInputProps) {
       </AnimatePresence>
 
       <p id="url-help" className="mt-3 text-center text-xs text-gray-600">
-        Supports youtube.com/watch?v= and youtu.be/ links
+        {t("supportedFormats")}
       </p>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Check, ArrowRight, Sparkles } from "lucide-react";
-import { PRICING_TIERS } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 24 },
@@ -10,6 +10,41 @@ const fadeInUp = {
 };
 
 export default function PricingPage() {
+  const t = useTranslations("pricing");
+
+  const tiers = [
+    {
+      key: "free",
+      name: t("free"),
+      price: t("freePrice"),
+      period: t("freePeriod"),
+      description: t("freeDesc"),
+      features: [t("freeF1"), t("freeF2"), t("freeF3"), t("freeF4")],
+      highlighted: false,
+      cta: t("freeCTA"),
+    },
+    {
+      key: "pro",
+      name: t("pro"),
+      price: t("proPrice"),
+      period: t("proPeriod"),
+      description: t("proDesc"),
+      features: [t("proF1"), t("proF2"), t("proF3"), t("proF4"), t("proF5"), t("proF6")],
+      highlighted: true,
+      cta: t("proCTA"),
+    },
+    {
+      key: "team",
+      name: t("team"),
+      price: t("teamPrice"),
+      period: t("teamPeriod"),
+      description: t("teamDesc"),
+      features: [t("teamF1"), t("teamF2"), t("teamF3"), t("teamF4"), t("teamF5"), t("teamF6")],
+      highlighted: false,
+      cta: t("teamCTA"),
+    },
+  ];
+
   return (
     <div className="pt-36 pb-28">
       <div className="page-container">
@@ -21,21 +56,21 @@ export default function PricingPage() {
           transition={{ duration: 0.5 }}
           className="text-center mb-20"
         >
-          <span className="text-label mb-3 inline-block">Pricing</span>
+          <span className="text-label mb-3 inline-block">{t("label")}</span>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-100 mb-6">
-            Simple, transparent{" "}
-            <span className="gradient-text">pricing</span>
+            {t("title", { highlight: "" })}{" "}
+            <span className="gradient-text">{t("highlight")}</span>
           </h1>
           <p className="max-w-2xl mx-auto text-gray-400 leading-relaxed text-base sm:text-lg">
-            Start free, upgrade when you need more. No hidden fees, no surprises.
+            {t("subtitle")}
           </p>
         </motion.div>
 
         {/* Pricing cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-7 lg:gap-9 max-w-6xl mx-auto">
-          {PRICING_TIERS.map((tier, index) => (
+          {tiers.map((tier, index) => (
             <motion.div
-              key={tier.name}
+              key={tier.key}
               initial="hidden"
               animate="visible"
               variants={fadeInUp}
@@ -51,7 +86,7 @@ export default function PricingPage() {
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
                   <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-500 text-black text-xs font-bold">
                     <Sparkles size={12} />
-                    Most Popular
+                    {t("mostPopular")}
                   </span>
                 </div>
               )}
@@ -104,7 +139,7 @@ export default function PricingPage() {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="text-center text-sm text-gray-600 mt-12"
         >
-          Need something custom? Contact us at{" "}
+          {t("contactHint")}{" "}
           <span className="text-amber-400">hello@veractum.app</span>
         </motion.p>
       </div>

@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown, Clock } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SourceBadge } from "@/components/SourceBadge";
 import type { ClaimCardProps } from "@/types";
 
 export function ClaimCard({ claim }: ClaimCardProps) {
+  const t = useTranslations("analysis");
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -45,7 +47,7 @@ export function ClaimCard({ claim }: ClaimCardProps) {
       {/* Confidence bar */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-xs text-gray-500">Confidence</span>
+          <span className="text-xs text-gray-500">{t("confidence")}</span>
           <span className="text-xs font-mono text-gray-400">{claim.confidence}%</span>
         </div>
         <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
@@ -79,7 +81,7 @@ export function ClaimCard({ claim }: ClaimCardProps) {
           size={14}
           className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
         />
-        <span>{isExpanded ? "Hide reasoning" : "Show reasoning"}</span>
+        <span>{isExpanded ? t("hideReasoning") : t("showReasoning")}</span>
       </div>
 
       {/* Expanded reasoning */}
@@ -92,7 +94,7 @@ export function ClaimCard({ claim }: ClaimCardProps) {
           className="mt-4 pt-4 border-t border-gray-800"
         >
           <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-            AI Reasoning
+            {t("aiReasoning")}
           </h4>
           <p className="text-sm text-gray-400 leading-relaxed">
             {claim.reasoning}

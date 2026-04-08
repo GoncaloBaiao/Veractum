@@ -2,10 +2,12 @@
 
 import { motion } from "framer-motion";
 import { Check, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { AnalysisLoaderProps } from "@/types";
-import { ANALYSIS_STEPS } from "@/lib/utils";
 
 export function AnalysisLoader({ currentStep }: AnalysisLoaderProps) {
+  const t = useTranslations("analysisLoader");
+  const steps = [t("step1"), t("step2"), t("step3"), t("step4")];
   return (
     <div className="w-full max-w-md mx-auto py-16">
       {/* Central spinner */}
@@ -17,7 +19,7 @@ export function AnalysisLoader({ currentStep }: AnalysisLoaderProps) {
 
       {/* Steps */}
       <div className="space-y-4" role="status" aria-live="polite">
-        {ANALYSIS_STEPS.map((label, index) => {
+        {steps.map((label, index) => {
           const isCompleted = index < currentStep;
           const isActive = index === currentStep;
 
@@ -75,7 +77,7 @@ export function AnalysisLoader({ currentStep }: AnalysisLoaderProps) {
 
       {/* Subtext */}
       <p className="mt-8 text-center text-xs text-gray-600">
-        This usually takes 15–30 seconds depending on video length.
+        {t("note")}
       </p>
     </div>
   );

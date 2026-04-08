@@ -2,13 +2,21 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Menu, X } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
-import { NAV_LINKS } from "@/lib/utils";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 export function Navbar() {
+  const t = useTranslations("nav");
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const navLinks = [
+    { label: t("howItWorks"), href: "/#how-it-works" },
+    { label: t("pricing"), href: "/pricing" },
+    { label: t("history"), href: "/history" },
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,7 +49,7 @@ export function Navbar() {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
-          {NAV_LINKS.map((link) => (
+          {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -54,17 +62,18 @@ export function Navbar() {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-3">
+          <LanguageSelector />
           <Link
             href="/api/auth/signin"
             className="text-sm text-gray-400 hover:text-gray-100 transition-colors px-4 py-2"
           >
-            Sign In
+            {t("signIn")}
           </Link>
           <Link
             href="/#hero"
             className="bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-6 py-2.5 text-sm transition-all hover:shadow-lg hover:shadow-amber-500/25"
           >
-            Try Free
+            {t("tryFree")}
           </Link>
         </div>
 
@@ -83,7 +92,7 @@ export function Navbar() {
       {isMobileOpen && (
         <div className="md:hidden bg-[#0a0a0f]/95 backdrop-blur-md border-b border-gray-800/50">
           <div className="page-container py-6 flex flex-col gap-4">
-            {NAV_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -94,19 +103,22 @@ export function Navbar() {
               </Link>
             ))}
             <hr className="border-gray-800" />
+            <div className="py-2">
+              <LanguageSelector />
+            </div>
             <Link
               href="/api/auth/signin"
               className="text-gray-400 hover:text-gray-100 transition-colors py-2"
               onClick={() => setIsMobileOpen(false)}
             >
-              Sign In
+              {t("signIn")}
             </Link>
             <Link
               href="/#hero"
               onClick={() => setIsMobileOpen(false)}
               className="bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-6 py-3 text-sm text-center transition-all"
             >
-              Try Free
+              {t("tryFree")}
             </Link>
           </div>
         </div>

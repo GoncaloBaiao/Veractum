@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, Clock, User, ExternalLink, AlertCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { SummaryCard } from "@/components/SummaryCard";
 import { ClaimCard } from "@/components/ClaimCard";
 import { Timeline } from "@/components/Timeline";
@@ -14,6 +15,7 @@ import { formatDate, formatDuration } from "@/lib/utils";
 import type { Analysis, ApiResponse } from "@/types";
 
 export default function AnalysisPage() {
+  const t = useTranslations("analysis");
   const params = useParams();
   const id = params.id as string;
 
@@ -80,14 +82,14 @@ export default function AnalysisPage() {
           <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-6">
             <AlertCircle size={28} className="text-red-400" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-100 mb-3">Something went wrong</h1>
+          <h1 className="text-2xl font-bold text-gray-100 mb-3">{t("somethingWrong")}</h1>
           <p className="text-gray-400 mb-8">{error}</p>
           <Link
             href="/"
             className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-8 py-3 transition-all"
           >
             <ArrowLeft size={16} />
-            Try Another Video
+            {t("tryAnother")}
           </Link>
         </div>
       </div>
@@ -119,7 +121,7 @@ export default function AnalysisPage() {
           className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-300 transition-colors mb-8"
         >
           <ArrowLeft size={14} />
-          New Analysis
+          {t("newAnalysis")}
         </Link>
 
         {/* Video header */}
@@ -168,13 +170,13 @@ export default function AnalysisPage() {
             {/* Quick stats */}
             <div className="flex gap-4 mt-4">
               <div className="px-3 py-1.5 rounded-lg bg-gray-900 border border-gray-800 text-xs text-gray-400">
-                <span className="font-bold text-gray-200">{analysis.claims.length}</span> claims found
+                <span className="font-bold text-gray-200">{analysis.claims.length}</span> {t("claimsFoundLabel")}
               </div>
               <div className="px-3 py-1.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-400">
-                <span className="font-bold">{supportedCount}</span> supported
+                <span className="font-bold">{supportedCount}</span> {t("supportedLabel")}
               </div>
               <div className="px-3 py-1.5 rounded-lg bg-red-500/5 border border-red-500/20 text-xs text-red-400">
-                <span className="font-bold">{contestedCount}</span> contested
+                <span className="font-bold">{contestedCount}</span> {t("contestedLabel")}
               </div>
             </div>
 
@@ -184,7 +186,7 @@ export default function AnalysisPage() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 mt-4 text-sm text-amber-400 hover:text-amber-300 transition-colors"
             >
-              Watch on YouTube
+              {t("watchOnYouTube")}
               <ExternalLink size={13} />
             </a>
           </div>
@@ -223,7 +225,7 @@ export default function AnalysisPage() {
           {factualClaims.length > 0 && (
             <section aria-labelledby="factual-claims-heading" className="mb-8">
               <h2 id="factual-claims-heading" className="text-xl font-bold text-gray-100 mb-5">
-                Factual Claims ({factualClaims.length})
+                {t("factualClaims", { count: factualClaims.length })}
               </h2>
               <div className="space-y-4">
                 {factualClaims.map((claim) => (
@@ -236,7 +238,7 @@ export default function AnalysisPage() {
           {opinionClaims.length > 0 && (
             <section aria-labelledby="opinion-claims-heading">
               <h2 id="opinion-claims-heading" className="text-xl font-bold text-gray-100 mb-5">
-                Opinions & Predictions ({opinionClaims.length})
+                {t("opinionsClaims", { count: opinionClaims.length })}
               </h2>
               <div className="space-y-4">
                 {opinionClaims.map((claim) => (

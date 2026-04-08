@@ -5,10 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, FileCheck, Loader2, LogIn } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { formatDate } from "@/lib/utils";
 import type { AnalysisListItem, ApiResponse } from "@/types";
 
 export default function HistoryPage() {
+  const t = useTranslations("history");
   const [analyses, setAnalyses] = useState<AnalysisListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -48,15 +50,15 @@ export default function HistoryPage() {
           <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto mb-6">
             <LogIn size={28} className="text-amber-400" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-100 mb-3">Sign in to view history</h1>
+          <h1 className="text-2xl font-bold text-gray-100 mb-3">{t("signInTitle")}</h1>
           <p className="text-gray-400 mb-8">
-            Your past analyses are saved to your account. Sign in to access them.
+            {t("signInDesc")}
           </p>
           <Link
             href="/api/auth/signin"
             className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-8 py-3 transition-all"
           >
-            Sign In
+            {t("signIn")}
           </Link>
         </div>
       </div>
@@ -80,14 +82,14 @@ export default function HistoryPage() {
           className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-300 transition-colors mb-8"
         >
           <ArrowLeft size={14} />
-          Home
+          {t("home")}
         </Link>
 
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-100 mb-2">
-          Analysis History
+          {t("title")}
         </h1>
         <p className="text-gray-400 mb-10">
-          Your past video analyses, sorted by most recent.
+          {t("subtitle")}
         </p>
 
         {analyses.length === 0 ? (
@@ -95,15 +97,15 @@ export default function HistoryPage() {
             <div className="w-16 h-16 rounded-2xl bg-gray-900 border border-gray-800 flex items-center justify-center mx-auto mb-6">
               <FileCheck size={24} className="text-gray-600" />
             </div>
-            <h2 className="text-lg font-semibold text-gray-300 mb-2">No analyses yet</h2>
+            <h2 className="text-lg font-semibold text-gray-300 mb-2">{t("noAnalyses")}</h2>
             <p className="text-gray-500 mb-6">
-              Paste a YouTube link on the home page to get started.
+              {t("noAnalysesDesc")}
             </p>
             <Link
               href="/"
               className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-6 py-3 text-sm transition-all"
             >
-              Analyse a Video
+              {t("analyseVideo")}
             </Link>
           </div>
         ) : (
@@ -159,7 +161,7 @@ export default function HistoryPage() {
                     </div>
                     {item.claimCount > 0 && (
                       <p className="text-xs text-amber-400/60 mt-2">
-                        {item.claimCount} claims analysed
+                        {t("claimsAnalysed", { count: item.claimCount })}
                       </p>
                     )}
                   </div>

@@ -4,10 +4,12 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, AlertCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { AnalysisLoader } from "@/components/AnalysisLoader";
 import type { ApiResponse, AnalyzeResponse } from "@/types";
 
 function NewAnalysisContent() {
+  const t = useTranslations("analysis");
   const router = useRouter();
   const searchParams = useSearchParams();
   const url = searchParams.get("url");
@@ -61,14 +63,14 @@ function NewAnalysisContent() {
           <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-6">
             <AlertCircle size={28} className="text-red-400" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-100 mb-3">Something went wrong</h1>
+          <h1 className="text-2xl font-bold text-gray-100 mb-3">{t("somethingWrong")}</h1>
           <p className="text-gray-400 mb-8">{error}</p>
           <Link
             href="/"
             className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-8 py-3 transition-all"
           >
             <ArrowLeft size={16} />
-            Try Another Video
+            {t("tryAnother")}
           </Link>
         </div>
       </div>

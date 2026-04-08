@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import type { Summary, Claim, TimelineSegment } from "@/types";
 
 const MAX_RETRIES = 3;
@@ -28,48 +28,7 @@ async function withRetry<T>(fn: () => Promise<T>, retries = MAX_RETRIES): Promis
   throw lastError ?? new Error("Gemini request failed.");
 }
 
-/**
- * Strip markdown fences and attempt to repair truncated JSON.
- */
-function cleanAndParseJson<T = unknown>(raw: string): T {
-  let text = raw.trim();
 
-  // Strip markdown code fences
-  text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "");
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    // Attempt to repair truncated JSON
-    const repaired = repairTruncatedJson(text);
-    return JSON.parse(repaired);
-  }
-}
-
-function repairTruncatedJson(text: string): string {
-  // Close any unterminated string
-  const quoteCount = (text.match(/(?<!\\)"/g) || []).length;
-  if (quoteCount % 2 !== 0) {
-    text += '"';
-  }
-
-  // Remove trailing comma before we close brackets
-  text = text.replace(/,\s*$/, "");
-
-  // Count open/close brackets and close any that are open
-  const opens = { "{": 0, "[": 0 };
-  const closes: Record<string, "{" | "["> = { "}": "{", "]": "[" };
-  for (const ch of text) {
-    if (ch === "{" || ch === "[") opens[ch]++;
-    if ((ch === "}" || ch === "]") && opens[closes[ch]] > 0) opens[closes[ch]]--;
-  }
-
-  // Close innermost open brackets first: arrays before objects
-  for (let i = 0; i < opens["["]; i++) text += "]";
-  for (let i = 0; i < opens["{"]; i++) text += "}";
-
-  return text;
-}
 
 const SEGMENT_COLORS = [
   "#f59e0b", // amber-500
@@ -125,6 +84,27 @@ ${truncatedTranscript}`,
         temperature: 0.3,
         maxOutputTokens: 4096,
         responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            overview: { type: Type.STRING },
+            keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
+            segments: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  topic: { type: Type.STRING },
+                  startTime: { type: Type.STRING },
+                  endTime: { type: Type.STRING },
+                  durationSeconds: { type: Type.NUMBER },
+                },
+                required: ["topic", "startTime", "endTime", "durationSeconds"],
+              },
+            },
+          },
+          required: ["overview", "keyPoints", "segments"],
+        },
       },
     });
 
@@ -133,7 +113,7 @@ ${truncatedTranscript}`,
       throw new Error("No response content from Gemini.");
     }
 
-    return cleanAndParseJson<Record<string, unknown>>(content);
+    return JSON.parse(content) as Record<string, unknown>;
   });
 
   const segments: TimelineSegment[] = (
@@ -198,6 +178,25 @@ ${truncatedTranscript}`,
         temperature: 0.2,
         maxOutputTokens: 4096,
         responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            claims: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  text: { type: Type.STRING },
+                  type: { type: Type.STRING, enum: ["factual", "opinion", "prediction"] },
+                  timestamp: { type: Type.STRING },
+                  confidence: { type: Type.NUMBER },
+                },
+                required: ["text", "type", "confidence"],
+              },
+            },
+          },
+          required: ["claims"],
+        },
       },
     });
 
@@ -206,7 +205,7 @@ ${truncatedTranscript}`,
       throw new Error("No response content from Gemini.");
     }
 
-    return cleanAndParseJson<Record<string, unknown>>(content);
+    return JSON.parse(content) as Record<string, unknown>;
   });
 
   const claims: Claim[] = (

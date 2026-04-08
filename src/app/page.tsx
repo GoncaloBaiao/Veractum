@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import {
   Link as LinkIcon,
@@ -143,6 +144,25 @@ const fadeInUp = {
 
 export default function HomePage() {
   const router = useRouter();
+  const t = useTranslations();
+  const heroT = useTranslations("hero");
+  const howT = useTranslations("howItWorks");
+  const featT = useTranslations("features");
+  const demoT = useTranslations("demo");
+  const ctaT = useTranslations("cta");
+
+  const STEPS_I18N = [
+    { icon: LinkIcon, title: howT("step1Title"), description: howT("step1Desc") },
+    { icon: Brain, title: howT("step2Title"), description: howT("step2Desc") },
+    { icon: FileCheck, title: howT("step3Title"), description: howT("step3Desc") },
+  ];
+
+  const FEATURES_I18N = [
+    { icon: Zap, title: featT("instantSummary"), description: featT("instantSummaryDesc") },
+    { icon: Search, title: featT("claimExtraction"), description: featT("claimExtractionDesc") },
+    { icon: Shield, title: featT("factCheck"), description: featT("factCheckDesc") },
+    { icon: BarChart3, title: featT("timeline"), description: featT("timelineDesc") },
+  ];
 
   const handleAnalyse = (url: string) => {
     const encoded = encodeURIComponent(url);
@@ -169,9 +189,9 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-gray-100 mb-6">
-              Watch any video.
+              {heroT("title1")}
               <br />
-              <span className="gradient-text">Understand everything.</span>
+              <span className="gradient-text">{heroT("title2")}</span>
             </h1>
           </motion.div>
 
@@ -182,8 +202,7 @@ export default function HomePage() {
             transition={{ duration: 0.6, delay: 0.15 }}
             className="max-w-2xl mx-auto text-lg sm:text-xl text-gray-400 leading-relaxed mb-10"
           >
-            Paste a YouTube link. Veractum extracts the transcript, summarises what was said,
-            and fact-checks every claim — with sources.
+            {heroT("subtitle")}
           </motion.p>
 
           <motion.div
@@ -207,7 +226,7 @@ export default function HomePage() {
               href="#demo"
               className="border-2 border-gray-700 hover:border-amber-400 text-gray-300 hover:text-white rounded-xl px-8 py-3.5 font-medium transition-all text-sm"
             >
-              See Example
+              {heroT("seeExample")}
             </a>
           </motion.div>
 
@@ -218,7 +237,7 @@ export default function HomePage() {
             transition={{ duration: 0.6, delay: 0.55 }}
             className="mt-8 text-sm text-gray-600"
           >
-            Trusted by curious minds. No account needed to try.
+            {heroT("trusted")}
           </motion.p>
         </div>
       </section>
@@ -234,14 +253,14 @@ export default function HomePage() {
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <span className="text-label mb-3 inline-block">How it Works</span>
+            <span className="text-label mb-3 inline-block">{howT("label")}</span>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-100">
-              Three steps to <span className="gradient-text">clarity</span>
+              {howT("title", { highlight: "" })}<span className="gradient-text">{howT("highlight")}</span>
             </h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            {STEPS.map((step, index) => {
+            {STEPS_I18N.map((step, index) => {
               const Icon = step.icon;
               return (
                 <motion.div
@@ -280,15 +299,15 @@ export default function HomePage() {
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <span className="text-label mb-3 inline-block">Features</span>
+            <span className="text-label mb-3 inline-block">{featT("label")}</span>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-100">
-              Everything you need to{" "}
-              <span className="gradient-text">think clearly</span>
+              {featT("title", { highlight: "" })}{" "}
+              <span className="gradient-text">{featT("highlight")}</span>
             </h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-            {FEATURES.map((feature, index) => {
+            {FEATURES_I18N.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <motion.div
@@ -329,9 +348,9 @@ export default function HomePage() {
             transition={{ duration: 0.5 }}
             className="text-center mb-12"
           >
-            <span className="text-label mb-3 inline-block">Preview</span>
+            <span className="text-label mb-3 inline-block">{demoT("label")}</span>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-100">
-              See it in <span className="gradient-text">action</span>
+              {demoT("title", { highlight: "" })}<span className="gradient-text">{demoT("highlight")}</span>
             </h2>
           </motion.div>
 
@@ -346,7 +365,7 @@ export default function HomePage() {
             {/* Example label */}
             <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
               <span className="px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-medium text-amber-400">
-                Example Analysis
+                {demoT("exampleAnalysis")}
               </span>
             </div>
 
@@ -389,7 +408,7 @@ export default function HomePage() {
             {/* ── Summary block ── */}
             <div className="mb-8 pb-8 border-b border-gray-800/50">
               <h4 className="text-sm font-semibold text-amber-400 uppercase tracking-wider mb-4">
-                Summary
+                {demoT("summary")}
               </h4>
               <ul className="space-y-2.5">
                 {DEMO_SUMMARY_POINTS.map((point, idx) => (
@@ -404,7 +423,7 @@ export default function HomePage() {
             {/* ── Claim cards ── */}
             <div>
               <h4 className="text-sm font-semibold text-amber-400 uppercase tracking-wider mb-5">
-                Extracted Claims
+                {demoT("extractedClaims")}
               </h4>
               <div className="space-y-4">
                 {DEMO_CLAIMS.map((claim, idx) => {
@@ -433,7 +452,7 @@ export default function HomePage() {
                       {claim.confidence > 0 && (
                         <div className="mb-3">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs text-gray-600">Confidence</span>
+                            <span className="text-xs text-gray-600">{demoT("confidence")}</span>
                             <span className="text-xs font-mono text-gray-500">
                               {claim.confidence}%
                             </span>
@@ -489,18 +508,17 @@ export default function HomePage() {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-100 mb-6">
-              Ready to think more{" "}
-              <span className="gradient-text">clearly</span>?
+              {ctaT("title")}{" "}
+              <span className="gradient-text">{ctaT("highlight")}</span>?
             </h2>
             <p className="max-w-xl mx-auto text-gray-400 leading-relaxed mb-10">
-              Stop guessing what&apos;s true. Paste a video, get the facts — with evidence, context,
-              and confidence scores you can trust.
+              {ctaT("subtitle")}
             </p>
             <a
               href="#hero"
               className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-10 py-4 transition-all hover:shadow-lg hover:shadow-amber-500/50 text-base"
             >
-              Analyse a Video
+              {ctaT("button")}
               <ArrowRight size={18} />
             </a>
           </motion.div>
