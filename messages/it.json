@@ -22,7 +22,7 @@
   },
   "howItWorks": {
     "label": "Come Funziona",
-    "title": "Tre passi verso la {highlight}",
+    "title": "Tre passi verso la",
     "highlight": "chiarezza",
     "step1Title": "Incolla un Link YouTube",
     "step1Desc": "Inserisci qualsiasi URL YouTube in Veractum. Supportiamo link standard, brevi e incorporati.",
@@ -33,7 +33,7 @@
   },
   "features": {
     "label": "Funzionalità",
-    "title": "Tutto ciò di cui hai bisogno per {highlight}",
+    "title": "Tutto ciò di cui hai bisogno per",
     "highlight": "pensare chiaramente",
     "instantSummary": "Riassunto Istantaneo",
     "instantSummaryDesc": "Ottieni i punti chiave di qualsiasi video in secondi. Basta cercare per ore.",
@@ -46,7 +46,7 @@
   },
   "demo": {
     "label": "Anteprima",
-    "title": "Guardalo in {highlight}",
+    "title": "Guardalo in",
     "highlight": "azione",
     "exampleAnalysis": "Analisi di Esempio",
     "summary": "Riassunto",
@@ -54,14 +54,14 @@
     "confidence": "Confidenza"
   },
   "cta": {
-    "title": "Pronto a pensare con più {highlight}?",
+    "title": "Pronto a pensare con più",
     "highlight": "chiarezza",
     "subtitle": "Smetti di indovinare cosa è vero. Incolla un video, ottieni i fatti — con prove, contesto e punteggi di confidenza.",
     "button": "Analizza un Video"
   },
   "pricing": {
     "label": "Prezzi",
-    "title": "Prezzi semplici e {highlight}",
+    "title": "Prezzi semplici e",
     "highlight": "trasparenti",
     "subtitle": "Inizia gratis, aggiorna quando ne hai bisogno. Nessun costo nascosto, nessuna sorpresa.",
     "mostPopular": "Più Popolare",

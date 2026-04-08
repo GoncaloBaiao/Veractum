@@ -22,7 +22,7 @@
   },
   "howItWorks": {
     "label": "How it Works",
-    "title": "Three steps to {highlight}",
+    "title": "Three steps to",
     "highlight": "clarity",
     "step1Title": "Paste a YouTube Link",
     "step1Desc": "Drop any YouTube URL into Veractum. We support standard watch links, short links, and embedded URLs.",
@@ -33,7 +33,7 @@
   },
   "features": {
     "label": "Features",
-    "title": "Everything you need to {highlight}",
+    "title": "Everything you need to",
     "highlight": "think clearly",
     "instantSummary": "Instant Summary",
     "instantSummaryDesc": "Get the key points of any video in seconds. No more scrubbing through hours of content to find what matters.",
@@ -46,7 +46,7 @@
   },
   "demo": {
     "label": "Preview",
-    "title": "See it in {highlight}",
+    "title": "See it in",
     "highlight": "action",
     "exampleAnalysis": "Example Analysis",
     "summary": "Summary",
@@ -54,14 +54,14 @@
     "confidence": "Confidence"
   },
   "cta": {
-    "title": "Ready to think more {highlight}?",
+    "title": "Ready to think more",
     "highlight": "clearly",
     "subtitle": "Stop guessing what's true. Paste a video, get the facts — with evidence, context, and confidence scores you can trust.",
     "button": "Analyse a Video"
   },
   "pricing": {
     "label": "Pricing",
-    "title": "Simple, transparent {highlight}",
+    "title": "Simple, transparent",
     "highlight": "pricing",
     "subtitle": "Start free, upgrade when you need more. No hidden fees, no surprises.",
     "mostPopular": "Most Popular",

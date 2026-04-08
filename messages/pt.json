@@ -22,7 +22,7 @@
   },
   "howItWorks": {
     "label": "Como Funciona",
-    "title": "Três passos para a {highlight}",
+    "title": "Três passos para a",
     "highlight": "clareza",
     "step1Title": "Cola um Link do YouTube",
     "step1Desc": "Insere qualquer URL do YouTube no Veractum. Suportamos links normais, curtos e incorporados.",
@@ -33,7 +33,7 @@
   },
   "features": {
     "label": "Funcionalidades",
-    "title": "Tudo o que precisas para {highlight}",
+    "title": "Tudo o que precisas para",
     "highlight": "pensar com clareza",
     "instantSummary": "Resumo Instantâneo",
     "instantSummaryDesc": "Obtém os pontos-chave de qualquer vídeo em segundos. Sem perder horas a procurar o que interessa.",
@@ -46,7 +46,7 @@
   },
   "demo": {
     "label": "Pré-visualização",
-    "title": "Vê em {highlight}",
+    "title": "Vê em",
     "highlight": "ação",
     "exampleAnalysis": "Análise de Exemplo",
     "summary": "Resumo",
@@ -54,14 +54,14 @@
     "confidence": "Confiança"
   },
   "cta": {
-    "title": "Pronto para pensar com mais {highlight}?",
+    "title": "Pronto para pensar com mais",
     "highlight": "clareza",
     "subtitle": "Para de adivinhar o que é verdade. Cola um vídeo, obtém os factos — com provas, contexto e pontuações de confiança.",
     "button": "Analisar um Vídeo"
   },
   "pricing": {
     "label": "Preços",
-    "title": "Preços simples e {highlight}",
+    "title": "Preços simples e",
     "highlight": "transparentes",
     "subtitle": "Começa grátis, atualiza quando precisares. Sem taxas ocultas, sem surpresas.",
     "mostPopular": "Mais Popular",

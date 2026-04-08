@@ -160,12 +160,14 @@ export async function extractClaims(transcript: string, locale: string = "en"): 
   const language = LOCALE_LANGUAGE_MAP[locale] || "English";
 
   const truncatedTranscript =
-    transcript.length > 15000 ? transcript.slice(0, 15000) + "…" : transcript;
+    transcript.length > 10000 ? transcript.slice(0, 10000) + "…" : transcript;
 
-  const result = await withRetry(async () => {
-    const response = await client.models.generateContent({
-      model: GEMINI_MODEL,
-      contents: `Respond entirely in ${language}. All text fields in your response must be in ${language}.
+  let result: Record<string, unknown>;
+  try {
+    result = await withRetry(async () => {
+      const response = await client.models.generateContent({
+        model: GEMINI_MODEL,
+        contents: `Respond entirely in ${language}. All text fields in your response must be in ${language}.
 
 You are an expert fact-checker and claim analyst. Given a video transcript, extract the most important verifiable claims.
 
@@ -182,7 +184,7 @@ Return JSON with this exact structure:
 }
 
 Rules:
-- Extract up to 10 of the most important and verifiable claims
+- Extract up to 8 of the most important and verifiable claims. Keep each claim text under 150 characters.
 - "factual" = a statement that can be verified as true/false with evidence
 - "opinion" = a subjective statement or value judgment
 - "prediction" = a statement about the future
@@ -195,7 +197,7 @@ Transcript:
 ${truncatedTranscript}`,
       config: {
         temperature: 0.2,
-        maxOutputTokens: 4096,
+        maxOutputTokens: 8192,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -225,7 +227,11 @@ ${truncatedTranscript}`,
     }
 
     return JSON.parse(content) as Record<string, unknown>;
-  });
+    });
+  } catch {
+    console.error("extractClaims: JSON parse failed after retries, returning empty claims");
+    return [];
+  }
 
   const claims: Claim[] = (
     result.claims as Array<{

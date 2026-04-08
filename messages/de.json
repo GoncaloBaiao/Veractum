@@ -22,7 +22,7 @@
   },
   "howItWorks": {
     "label": "So funktioniert's",
-    "title": "Drei Schritte zur {highlight}",
+    "title": "Drei Schritte zur",
     "highlight": "Klarheit",
     "step1Title": "YouTube-Link einfügen",
     "step1Desc": "Gib eine beliebige YouTube-URL in Veractum ein. Wir unterstützen Standard-, Kurz- und eingebettete Links.",
@@ -33,7 +33,7 @@
   },
   "features": {
     "label": "Funktionen",
-    "title": "Alles was du brauchst, um {highlight}",
+    "title": "Alles was du brauchst, um",
     "highlight": "klar zu denken",
     "instantSummary": "Sofortige Zusammenfassung",
     "instantSummaryDesc": "Erhalte die Kernpunkte jedes Videos in Sekunden. Kein stundenlanges Durchsuchen mehr.",
@@ -46,7 +46,7 @@
   },
   "demo": {
     "label": "Vorschau",
-    "title": "Sieh es in {highlight}",
+    "title": "Sieh es in",
     "highlight": "Aktion",
     "exampleAnalysis": "Beispielanalyse",
     "summary": "Zusammenfassung",
@@ -54,7 +54,7 @@
     "confidence": "Vertrauen"
   },
   "cta": {
-    "title": "Bereit, {highlight} zu denken?",
+    "title": "Bereit für mehr",
     "highlight": "klarer",
     "subtitle": "Hör auf zu raten, was wahr ist. Füge ein Video ein, erhalte die Fakten — mit Beweisen, Kontext und Vertrauenswerten.",
     "button": "Video analysieren"

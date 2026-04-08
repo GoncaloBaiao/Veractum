@@ -22,7 +22,7 @@
   },
   "howItWorks": {
     "label": "工作原理",
-    "title": "三步走向{highlight}",
+    "title": "三步走向",
     "highlight": "清晰",
     "step1Title": "粘贴YouTube链接",
     "step1Desc": "将任何YouTube URL放入Veractum。我们支持标准链接、短链接和嵌入链接。",
@@ -33,7 +33,7 @@
   },
   "features": {
     "label": "功能",
-    "title": "你需要的一切来{highlight}",
+    "title": "你需要的一切来",
     "highlight": "清晰思考",
     "instantSummary": "即时摘要",
     "instantSummaryDesc": "几秒钟内获取任何视频的关键要点。不再花数小时寻找重要内容。",
@@ -46,7 +46,7 @@
   },
   "demo": {
     "label": "预览",
-    "title": "查看{highlight}",
+    "title": "查看",
     "highlight": "实际效果",
     "exampleAnalysis": "示例分析",
     "summary": "摘要",
@@ -54,7 +54,7 @@
     "confidence": "置信度"
   },
   "cta": {
-    "title": "准备好更{highlight}地思考了吗？",
+    "title": "是时候更加",
     "highlight": "清晰",
     "subtitle": "不再猜测什么是真的。粘贴视频，获取事实——附带证据、背景和置信度评分。",
     "button": "分析视频"
