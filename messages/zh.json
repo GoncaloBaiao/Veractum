@@ -194,6 +194,8 @@
   "auth": {
     "signInTitle": "登录 Veractum",
     "signInDesc": "选择登录方式以继续。您的分析将保存到您的账户。",
+    "signInRequired": "您需要登录才能分析视频。几秒钟即可创建免费账户。",
+    "signInButton": "登录",
     "continueWith": "使用 {provider} 继续",
     "signingIn": "正在登录…",
     "termsNotice": "登录即表示您同意我们的服务条款和隐私政策。"

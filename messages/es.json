@@ -194,6 +194,8 @@
   "auth": {
     "signInTitle": "Inicia sesión en Veractum",
     "signInDesc": "Elige un proveedor para continuar. Tus análisis se guardarán en tu cuenta.",
+    "signInRequired": "Necesitas iniciar sesión para analizar vídeos. Crea una cuenta gratuita en segundos.",
+    "signInButton": "Iniciar Sesión",
     "continueWith": "Continuar con {provider}",
     "signingIn": "Iniciando sesión…",
     "termsNotice": "Al iniciar sesión, aceptas nuestros Términos de Servicio y Política de Privacidad."

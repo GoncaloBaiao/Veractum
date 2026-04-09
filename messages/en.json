@@ -194,6 +194,8 @@
   "auth": {
     "signInTitle": "Sign in to Veractum",
     "signInDesc": "Choose a provider to continue. Your analyses will be saved to your account.",
+    "signInRequired": "You need to sign in to analyse videos. Create a free account in seconds.",
+    "signInButton": "Sign In",
     "continueWith": "Continue with {provider}",
     "signingIn": "Signing in…",
     "termsNotice": "By signing in, you agree to our Terms of Service and Privacy Policy."

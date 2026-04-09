@@ -194,6 +194,8 @@
   "auth": {
     "signInTitle": "Veractumにログイン",
     "signInDesc": "プロバイダーを選択して続行してください。分析はアカウントに保存されます。",
+    "signInRequired": "動画を分析するにはサインインが必要です。数秒で無料アカウントを作成できます。",
+    "signInButton": "サインイン",
     "continueWith": "{provider}で続行",
     "signingIn": "ログイン中…",
     "termsNotice": "ログインすることで、利用規約とプライバシーポリシーに同意したことになります。"
