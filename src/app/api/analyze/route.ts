@@ -4,6 +4,8 @@ import {
   DATABASE_UNAVAILABLE_MESSAGE,
   isDatabaseUnavailableError,
 } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { getTierConfig, parseDurationToSeconds } from "@/lib/tiers";
 import { extractYouTubeId } from "@/lib/utils";
 import { getVideoMetadata } from "@/lib/youtube";
 import { fetchTranscript } from "@/lib/transcription";
@@ -24,6 +26,22 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
     const body = await request.json();
     const url: unknown = body?.url;
     const locale: string = typeof body?.locale === "string" ? body.locale : "en";
+
+    // Auth check
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required." },
+        { status: 401 }
+      );
+    }
+
+    const userId = session.user.id;
+    const userTier = (session.user as { tier?: string }).tier ?? "free";
+    const tierConfig = getTierConfig(userTier);
+
+    // Language restriction for free tier
+    const effectiveLocale = tierConfig.allLanguages ? locale : "en";
 
     if (typeof url !== "string" || !url.trim()) {
       return NextResponse.json(
@@ -52,10 +70,33 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       );
     }
 
+    // Check video duration limit
+    const durationSeconds = parseDurationToSeconds(metadata.duration);
+    if (durationSeconds > tierConfig.maxDurationSeconds) {
+      return NextResponse.json(
+        { success: false, error: `Video too long for your plan. Max ${Math.floor(tierConfig.maxDurationSeconds / 60)} minutes.` },
+        { status: 403 }
+      );
+    }
+
+    // Check monthly usage quota
+    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+    const quota = await prisma.usageQuota.findUnique({
+      where: { userId_month: { userId, month: currentMonth } },
+    });
+    const currentCount = quota?.analysisCount ?? 0;
+    if (tierConfig.maxAnalysesPerMonth !== Infinity && currentCount >= tierConfig.maxAnalysesPerMonth) {
+      return NextResponse.json(
+        { success: false, error: `Monthly analysis limit reached (${tierConfig.maxAnalysesPerMonth}). Upgrade for more.` },
+        { status: 403 }
+      );
+    }
+
     // Create analysis record
     const analysis = await prisma.analysis.create({
       data: {
         videoId,
+        userId,
         videoTitle: metadata.title,
         videoUrl: url.trim(),
         channelTitle: metadata.channelTitle,
@@ -92,7 +133,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
     }
 
     // Process in background (non-blocking)
-    processAnalysis(analysis.id, transcript, metadata.title, locale).catch(console.error);
+    processAnalysis(analysis.id, transcript, metadata.title, effectiveLocale, tierConfig.maxClaims).catch(console.error);
+
+    // Increment usage quota
+    await prisma.usageQuota.upsert({
+      where: { userId_month: { userId, month: currentMonth } },
+      update: { analysisCount: { increment: 1 } },
+      create: { userId, month: currentMonth, analysisCount: 1 },
+    });
 
     return NextResponse.json(
       {
@@ -129,9 +177,34 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   // History mode
   if (searchParams.get("history") === "true") {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required." },
+        { status: 401 }
+      );
+    }
+
+    const userTier = (session.user as { tier?: string }).tier ?? "free";
+    const tierConfig = getTierConfig(userTier);
+
+    if (tierConfig.historyAccess === "none") {
+      return NextResponse.json(
+        { success: false, error: "Upgrade to access analysis history.", code: "TIER_LOCKED" },
+        { status: 403 }
+      );
+    }
+
     try {
-      // For MVP, return all analyses (auth check would go here)
+      const where: Record<string, unknown> = { userId: session.user.id };
+      if (tierConfig.historyAccess === "limited" && tierConfig.historyDays !== Infinity) {
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - tierConfig.historyDays);
+        where.createdAt = { gte: cutoff };
+      }
+
       const analyses = await prisma.analysis.findMany({
+        where,
         orderBy: { createdAt: "desc" },
         take: 50,
         include: { _count: { select: { claims: true } } },
@@ -230,7 +303,8 @@ async function processAnalysis(
   analysisId: string,
   transcript: string,
   videoTitle: string,
-  locale: string
+  locale: string,
+  maxClaims: number = 8
 ): Promise<void> {
   const prisma = getPrismaClient();
   if (!prisma) {
@@ -242,7 +316,7 @@ async function processAnalysis(
     const summary = await generateSummary(transcript, videoTitle, locale);
 
     // Step 2: Extract claims
-    const claims = await extractClaims(transcript, locale);
+    const claims = await extractClaims(transcript, locale, maxClaims);
 
     // Step 3: Fact-check claims
     const factCheckedClaims = await factCheckClaims(claims, locale);

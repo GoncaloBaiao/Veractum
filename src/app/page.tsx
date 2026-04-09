@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
@@ -19,6 +20,9 @@ import {
   MessageCircle,
   ExternalLink,
   ArrowRight,
+  Chrome,
+  Mail,
+  Check,
 } from "lucide-react";
 import { VideoInput } from "@/components/VideoInput";
 
@@ -150,6 +154,31 @@ export default function HomePage() {
   const featT = useTranslations("features");
   const demoT = useTranslations("demo");
   const ctaT = useTranslations("cta");
+  const extT = useTranslations("extension");
+
+  const [extEmail, setExtEmail] = useState("");
+  const [extStatus, setExtStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  const handleExtWaitlist = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!extEmail.trim()) return;
+    setExtStatus("loading");
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: extEmail }),
+      });
+      if (res.ok) {
+        setExtStatus("success");
+        setExtEmail("");
+      } else {
+        setExtStatus("error");
+      }
+    } catch {
+      setExtStatus("error");
+    }
+  };
 
   const STEPS_I18N = [
     { icon: LinkIcon, title: howT("step1Title"), description: howT("step1Desc") },
@@ -488,6 +517,64 @@ export default function HomePage() {
                 })}
               </div>
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══════════════ CHROME EXTENSION ═══════════════ */}
+      <section className="section-spacing relative">
+        <div className="page-container">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={fadeInUp}
+            transition={{ duration: 0.5 }}
+            className="relative rounded-3xl border border-amber-500/20 bg-gray-900/50 backdrop-blur-sm p-8 sm:p-12 lg:p-16 text-center overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-amber-600/10 to-transparent rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
+
+            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto mb-6">
+              <Chrome size={32} className="text-amber-400" />
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-100 mb-4">
+              {extT("title")} <span className="gradient-text">{extT("highlight")}</span>
+            </h2>
+            <p className="max-w-xl mx-auto text-gray-400 leading-relaxed mb-8">
+              {extT("description")}
+            </p>
+
+            {extStatus === "success" ? (
+              <div className="flex items-center justify-center gap-2 text-emerald-400 font-medium">
+                <Check size={20} />
+                {extT("success")}
+              </div>
+            ) : (
+              <form onSubmit={handleExtWaitlist} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                <div className="relative flex-1">
+                  <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <input
+                    type="email"
+                    value={extEmail}
+                    onChange={(e) => setExtEmail(e.target.value)}
+                    placeholder={extT("emailPlaceholder")}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-800 border border-gray-700 text-gray-200 placeholder:text-gray-500 focus:outline-none focus:border-amber-500/50 text-sm"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={extStatus === "loading"}
+                  className="bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-6 py-3 text-sm transition-all hover:shadow-lg hover:shadow-amber-500/25 disabled:opacity-50 whitespace-nowrap"
+                >
+                  {extStatus === "loading" ? "..." : extT("notify")}
+                </button>
+              </form>
+            )}
+            {extStatus === "error" && (
+              <p className="text-red-400 text-sm mt-3">{extT("error")}</p>
+            )}
           </motion.div>
         </div>
       </section>

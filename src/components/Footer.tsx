@@ -12,6 +12,7 @@ export function Footer() {
       { label: t("howItWorks"), href: "/#how-it-works" },
       { label: t("pricing"), href: "/pricing" },
       { label: t("exampleAnalysis"), href: "/#demo" },
+      { label: t("donate"), href: "/donate" },
     ],
     [t("resources")]: [
       { label: t("documentation"), href: "#" },

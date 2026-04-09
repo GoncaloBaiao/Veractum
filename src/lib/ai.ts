@@ -155,7 +155,7 @@ ${truncatedTranscript}`,
   };
 }
 
-export async function extractClaims(transcript: string, locale: string = "en"): Promise<Claim[]> {
+export async function extractClaims(transcript: string, locale: string = "en", maxClaims: number = 8): Promise<Claim[]> {
   const client = getClient();
   const language = LOCALE_LANGUAGE_MAP[locale] || "English";
 
@@ -184,7 +184,7 @@ Return JSON with this exact structure:
 }
 
 Rules:
-- Extract up to 8 of the most important and verifiable claims. Keep each claim text under 150 characters.
+- Extract up to ${maxClaims} of the most important and verifiable claims. Keep each claim text under 150 characters.
 - "factual" = a statement that can be verified as true/false with evidence
 - "opinion" = a subjective statement or value judgment
 - "prediction" = a statement about the future
