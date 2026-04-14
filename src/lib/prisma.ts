@@ -33,8 +33,3 @@ export function isDatabaseUnavailableError(error: unknown): boolean {
 
   return error.message.includes("P1001") || error.message.includes("Can't reach database server");
 }
-
-if (process.env.NODE_ENV === "production") {
-  // Avoid sharing client across requests in production runtimes.
-  globalForPrisma.prisma = null;
-}
