@@ -37,10 +37,8 @@ export function Footer() {
               <span className="text-lg font-bold tracking-tight">Veractum</span>
             </Link>
             <p className="text-sm text-gray-500 leading-relaxed max-w-[200px]">
-              {t("tagline")}
-            </p>
-            <p className="text-sm text-gray-500 leading-relaxed max-w-[200px] mt-1">
-              {t("description")}
+              <span className="block">{t("tagline")}</span>
+              <span className="block mt-2 text-gray-600">{t("description")}</span>
             </p>
           </div>
 

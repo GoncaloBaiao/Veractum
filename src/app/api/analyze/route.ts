@@ -149,6 +149,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       );
     }
 
+    if (!transcript || transcript.trim().length < 50) {
+      await prisma.analysis.update({
+        where: { id: analysis.id },
+        data: { status: "FAILED", summary: { error: "Transcript too short or empty." } },
+      });
+      return NextResponse.json(
+        { success: false, error: "Could not extract a usable transcript from this video." },
+        { status: 422 }
+      );
+    }
+
     // Process in background (non-blocking)
     processAnalysis(analysis.id, transcript, metadata.title, effectiveLocale, tierConfig.maxClaims).catch(console.error);
 

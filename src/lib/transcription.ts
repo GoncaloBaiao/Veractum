@@ -43,21 +43,18 @@ export async function fetchTranscript(videoId: string): Promise<TranscriptRespon
   }
 
   // Friendly response so analysis can fail gracefully without crashing pipeline
-  return {
-    transcript: NO_CAPTIONS_FRIENDLY_MESSAGE,
-    segments: [
-      {
-        text: NO_CAPTIONS_FRIENDLY_MESSAGE,
-        start: 0,
-        duration: 0,
-      },
-    ],
-  };
+  throw new Error(NO_CAPTIONS_FRIENDLY_MESSAGE);
 }
 
 async function fetchWithYoutubeTranscript(videoId: string): Promise<TranscriptResponse | null> {
   try {
-    const rows = await YoutubeTranscript.fetchTranscript(videoId);
+    let rows;
+    try {
+      rows = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' });
+    } catch {
+      // try without language filter as fallback
+      rows = await YoutubeTranscript.fetchTranscript(videoId);
+    }
 
     if (!rows || rows.length === 0) {
       return null;
@@ -79,7 +76,8 @@ async function fetchWithYoutubeTranscript(videoId: string): Promise<TranscriptRe
       transcript: segments.map((segment) => segment.text).join(" "),
       segments,
     };
-  } catch {
+  } catch (error) {
+    console.warn("youtube-transcript library failed:", error instanceof Error ? error.message : error);
     return null;
   }
 }
@@ -103,14 +101,26 @@ async function fetchYouTubeCaptions(videoId: string): Promise<TranscriptResponse
     const html = await response.text();
 
     // Extract captions JSON from the page
-    const captionMatch = html.match(/"captionTracks":\s*(\[.*?\])/);
-    if (!captionMatch?.[1]) {
-      return null;
+    const captionIndex = html.indexOf('"captionTracks":');
+    if (captionIndex === -1) return null;
+
+    const arrayStart = html.indexOf('[', captionIndex);
+    if (arrayStart === -1) return null;
+
+    let depth = 0;
+    let arrayEnd = -1;
+    for (let i = arrayStart; i < html.length; i++) {
+      if (html[i] === '[' || html[i] === '{') depth++;
+      else if (html[i] === ']' || html[i] === '}') {
+        depth--;
+        if (depth === 0) { arrayEnd = i; break; }
+      }
     }
+    if (arrayEnd === -1) return null;
 
     let captionTracks: Array<{ baseUrl: string; languageCode: string }>;
     try {
-      captionTracks = JSON.parse(captionMatch[1]);
+      captionTracks = JSON.parse(html.slice(arrayStart, arrayEnd + 1));
     } catch {
       return null;
     }
