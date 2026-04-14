@@ -235,7 +235,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         where,
         orderBy: { createdAt: "desc" },
         take: 50,
-        distinct: ["id"],
+        distinct: ["videoId"],
         include: { _count: { select: { claims: true } } },
       });
 
