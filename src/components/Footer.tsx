@@ -27,7 +27,7 @@ export function Footer() {
   };
 
   return (
-    <footer className="border-t border-gray-800/50 bg-[#0a0a0f]">
+    <footer className="border-t border-gray-800/50 bg-[#0a0a0f] mt-auto">
       <div className="page-container py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* Brand */}
@@ -36,10 +36,8 @@ export function Footer() {
               <BrandLogo size="sm" />
               <span className="text-lg font-bold tracking-tight">Veractum</span>
             </Link>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              {t("tagline")}
-              <br />
-              {t("description")}
+            <p className="text-sm text-gray-500 leading-relaxed max-w-[220px]">
+              {t("tagline")} {t("description")}
             </p>
           </div>
 
@@ -64,7 +62,7 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-16 pt-8 border-t border-gray-800/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="mt-16 pt-8 border-t border-gray-800/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <p className="text-xs text-gray-600">
             {t("copyright", { year: new Date().getFullYear() })}
           </p>

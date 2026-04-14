@@ -30,7 +30,13 @@ export default function HistoryPage() {
         setIsAuthenticated(true);
 
         if (data.success && data.data) {
-          setAnalyses(data.data);
+          const seen = new Set<string>();
+          const unique = data.data.filter((item) => {
+            if (seen.has(item.id)) return false;
+            seen.add(item.id);
+            return true;
+          });
+          setAnalyses(unique);
         }
       } catch {
         // Silently handle — show empty state

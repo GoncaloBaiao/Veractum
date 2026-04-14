@@ -207,6 +207,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         where,
         orderBy: { createdAt: "desc" },
         take: 50,
+        distinct: ["id"],
         include: { _count: { select: { claims: true } } },
       });
 

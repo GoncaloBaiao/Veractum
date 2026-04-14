@@ -17,6 +17,7 @@ const FEATURE_ROWS = [
   "allLanguages",
   "analysisHistory",
   "priorityProcessing",
+  "aiModelChoice",
 ] as const;
 
 export default function PricingPage() {
@@ -38,6 +39,7 @@ export default function PricingPage() {
         allLanguages: false,
         analysisHistory: false,
         priorityProcessing: false,
+        aiModelChoice: false,
       },
       highlighted: false,
       cta: t("observerCTA"),
@@ -56,6 +58,7 @@ export default function PricingPage() {
         allLanguages: true,
         analysisHistory: "10 days",
         priorityProcessing: false,
+        aiModelChoice: false,
       },
       highlighted: true,
       cta: t("analystCTA"),
@@ -66,7 +69,7 @@ export default function PricingPage() {
       price: t("veractorPrice"),
       period: t("veractorPeriod"),
       description: t("veractorDesc"),
-      features: [t("veractorF1"), t("veractorF2"), t("veractorF3"), t("veractorF4"), t("veractorF5"), t("veractorF6")],
+      features: [t("veractorF1"), t("veractorF2"), t("veractorF3"), t("veractorF4"), t("veractorF5"), t("veractorF6"), t("veractorF7")],
       comparison: {
         analysesPerMonth: t("unlimited"),
         maxDuration: "6h",
@@ -74,6 +77,7 @@ export default function PricingPage() {
         allLanguages: true,
         analysisHistory: t("unlimited"),
         priorityProcessing: true,
+        aiModelChoice: "soon" as const,
       },
       highlighted: false,
       cta: t("veractorCTA"),
@@ -167,6 +171,38 @@ export default function PricingPage() {
           ))}
         </div>
 
+        {/* Coming Soon — AI Model Choice */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUp}
+          transition={{ duration: 0.5, delay: 0.35 }}
+          className="mt-10 max-w-6xl mx-auto"
+        >
+          <div className="relative rounded-2xl border border-amber-500/20 bg-gray-900/50 backdrop-blur-sm px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 overflow-hidden">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-amber-600/10 to-transparent rounded-full blur-2xl pointer-events-none" />
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+              <Sparkles size={20} className="text-amber-400" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
+                  {t("comingSoonLabel")}
+                </span>
+              </div>
+              <p className="text-sm text-gray-300 font-medium">
+                {t("aiModelChoiceTitle")}
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {t("aiModelChoiceDesc")}
+              </p>
+            </div>
+            <span className="shrink-0 px-3 py-1 rounded-full border border-amber-500/30 text-amber-400 text-xs font-medium">
+              Veractor
+            </span>
+          </div>
+        </motion.div>
+
         {/* Feature comparison table */}
         <motion.div
           initial="hidden"
@@ -194,7 +230,11 @@ export default function PricingPage() {
                       const val = tier.comparison[row];
                       return (
                         <td key={tier.key} className="py-3 px-4 text-center">
-                          {val === true ? (
+                          {val === "soon" ? (
+                            <span className="text-xs font-medium text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                              {t("comingSoonLabel")}
+                            </span>
+                          ) : val === true ? (
                             <Check size={16} className="text-emerald-400 mx-auto" />
                           ) : val === false ? (
                             <XIcon size={16} className="text-gray-700 mx-auto" />

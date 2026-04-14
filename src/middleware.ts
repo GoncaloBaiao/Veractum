@@ -1,29 +1,14 @@
-import createMiddleware from "next-intl/middleware";
-import { NextRequest } from "next/server";
-import { locales, defaultLocale } from "@/i18n/request";
-
-const intlMiddleware = createMiddleware({
-  locales,
-  defaultLocale,
-  localeDetection: false,
-});
+import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Skip middleware for API routes, Next.js internals, and static files
-  if (
-    pathname.startsWith("/api/") ||
-    pathname.startsWith("/_next/") ||
-    pathname.startsWith("/_vercel/") ||
-    pathname.includes(".")
-  ) {
-    return;
-  }
-
-  return intlMiddleware(request);
+  // This project uses cookie-based locale detection (no URL prefix).
+  // next-intl createMiddleware is NOT used here — it would redirect / → /en causing 404.
+  // All locale resolution happens in src/i18n/request.ts via the "locale" cookie.
+  // This middleware intentionally does nothing and lets all requests pass through.
+  return NextResponse.next();
 }
 
 export const config = {
+  // Only run on page routes — skip API, _next internals, and static files
   matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
 };
