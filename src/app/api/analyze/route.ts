@@ -92,6 +92,23 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       );
     }
 
+    // Check if a non-failed analysis already exists for this video + user
+    const existing = await prisma.analysis.findFirst({
+      where: {
+        videoId,
+        userId,
+        status: { not: "FAILED" },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (existing) {
+      return NextResponse.json(
+        { success: true, data: { analysisId: existing.id, status: existing.status } },
+        { status: 200 }
+      );
+    }
+
     // Create analysis record
     const analysis = await prisma.analysis.create({
       data: {

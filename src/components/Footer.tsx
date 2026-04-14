@@ -36,8 +36,11 @@ export function Footer() {
               <BrandLogo size="sm" />
               <span className="text-lg font-bold tracking-tight">Veractum</span>
             </Link>
-            <p className="text-sm text-gray-500 leading-relaxed max-w-[220px]">
-              {t("tagline")} {t("description")}
+            <p className="text-sm text-gray-500 leading-relaxed max-w-[200px]">
+              {t("tagline")}
+            </p>
+            <p className="text-sm text-gray-500 leading-relaxed max-w-[200px] mt-1">
+              {t("description")}
             </p>
           </div>
 
