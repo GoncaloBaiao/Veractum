@@ -32,9 +32,8 @@ export default function HistoryPage() {
         if (data.success && data.data) {
           const seen = new Set<string>();
           const unique = data.data.filter((item) => {
-            const key = item.videoTitle;
-            if (seen.has(key)) return false;
-            seen.add(key);
+            if (seen.has(item.id)) return false;
+            seen.add(item.id);
             return true;
           });
           setAnalyses(unique);

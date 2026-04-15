@@ -149,6 +149,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       );
     }
 
+    // Guard against empty or too-short transcripts
     if (!transcript || transcript.trim().length < 50) {
       await prisma.analysis.update({
         where: { id: analysis.id },
@@ -235,7 +236,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         where,
         orderBy: { createdAt: "desc" },
         take: 50,
-        distinct: ["videoId"],
+        distinct: ["id"],
         include: { _count: { select: { claims: true } } },
       });
 
