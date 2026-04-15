@@ -39,8 +39,11 @@ async function fetchViaDataApi(videoId: string): Promise<TranscriptResponse | nu
     }
 
     const listData = await listResponse.json();
-    const items: Array<{ id: string; snippet: { language: string; trackKind: string } }> =
+    const items: Array<{ id: string; snippet: { language: string; trackKind: string; name: string } }> =
       listData.items ?? [];
+
+    console.log(`[transcript] DataAPI found ${items.length} caption tracks:`,
+      items.map((i) => `${i.snippet.language}/${i.snippet.trackKind}`).join(", "));
 
     if (items.length === 0) return null;
 
@@ -53,8 +56,10 @@ async function fetchViaDataApi(videoId: string): Promise<TranscriptResponse | nu
 
     if (!preferred) return null;
 
-    // Step 2: Fetch caption content via timedtext URL (json3 format)
-    const timedtextUrl = `https://www.youtube.com/api/timedtext?v=${encodeURIComponent(videoId)}&lang=${encodeURIComponent(preferred.snippet.language)}&fmt=json3&xorb=2&xobt=3&xovt=3`;
+    console.log(`[transcript] Using track: ${preferred.snippet.language}/${preferred.snippet.trackKind}`);
+
+    // Step 2: Fetch caption content via timedtext URL
+    const timedtextUrl = `https://www.youtube.com/api/timedtext?v=${encodeURIComponent(videoId)}&lang=${encodeURIComponent(preferred.snippet.language)}&fmt=json3`;
     const captionResponse = await fetch(timedtextUrl, {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -63,15 +68,50 @@ async function fetchViaDataApi(videoId: string): Promise<TranscriptResponse | nu
       },
     });
 
+    console.log(`[transcript] timedtext response: ${captionResponse.status}, content-type: ${captionResponse.headers.get("content-type")}`);
+
     if (!captionResponse.ok) {
       console.warn(`[transcript] timedtext fetch failed: ${captionResponse.status}`);
       return null;
     }
 
-    const captionData = await captionResponse.json();
-    return parseJson3Format(captionData);
+    const rawText = await captionResponse.text();
+    console.log(`[transcript] timedtext raw length: ${rawText.length}, preview: ${rawText.slice(0, 200)}`);
+
+    if (rawText.length < 10) {
+      console.warn(`[transcript] timedtext returned empty/tiny response`);
+      return null;
+    }
+
+    // Try JSON3 format first
+    if (rawText.trim().startsWith("{")) {
+      try {
+        const captionData = JSON.parse(rawText);
+        const result = parseJson3Format(captionData);
+        if (result) {
+          console.log(`[transcript] Parsed JSON3: ${result.segments.length} segments`);
+          return result;
+        }
+        console.warn(`[transcript] JSON3 parsed but 0 segments`);
+      } catch (e) {
+        console.warn(`[transcript] JSON3 parse failed:`, e instanceof Error ? e.message : e);
+      }
+    }
+
+    // Fallback: try XML parsing
+    if (rawText.includes("<text") || rawText.includes("<transcript")) {
+      console.log(`[transcript] Trying XML fallback`);
+      const result = parseXmlFormat(rawText);
+      if (result) {
+        console.log(`[transcript] Parsed XML: ${result.segments.length} segments`);
+        return result;
+      }
+    }
+
+    console.warn(`[transcript] Could not parse timedtext response`);
+    return null;
   } catch (error) {
-    console.warn("DataAPI transcript fetch failed:", error instanceof Error ? error.message : error);
+    console.warn("[transcript] DataAPI fetch failed:", error instanceof Error ? error.message : error);
     return null;
   }
 }
@@ -169,6 +209,36 @@ function parseJson3Format(data: {
 
   if (segments.length === 0) return null;
 
+  return {
+    transcript: segments.map((s) => s.text).join(" "),
+    segments,
+  };
+}
+
+/**
+ * Parse YouTube's XML caption format into segments.
+ */
+function parseXmlFormat(xml: string): TranscriptResponse | null {
+  const segments: TranscriptSegment[] = [];
+  const regex = /<text start="([^"]*)" dur="([^"]*)"[^>]*>([^<]*)<\/text>/g;
+  let match;
+  while ((match = regex.exec(xml)) !== null) {
+    const text = match[3]
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .trim();
+    if (text) {
+      segments.push({
+        text,
+        start: parseFloat(match[1]),
+        duration: parseFloat(match[2]),
+      });
+    }
+  }
+  if (segments.length === 0) return null;
   return {
     transcript: segments.map((s) => s.text).join(" "),
     segments,
