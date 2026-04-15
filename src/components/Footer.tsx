@@ -27,11 +27,11 @@ export function Footer() {
   };
 
   return (
-    <footer className="border-t border-gray-800/50 bg-[#0a0a0f] mt-auto">
+    <footer className="border-t border-gray-800/50 bg-[#0a0a0f]">
       <div className="page-container py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* Brand */}
-          <div className="md:col-span-1">
+          <div className="md:col-span-1 pt-3">
             <Link href="/" className="flex items-center gap-2.5 mb-4">
               <BrandLogo size="sm" />
               <span className="text-lg font-bold tracking-tight">Veractum</span>
@@ -44,7 +44,7 @@ export function Footer() {
 
           {/* Link columns */}
           {Object.entries(footerLinks).map(([category, links]) => (
-            <div key={category} className="pt-1">
+            <div key={category} className="pt-3">
               <h3 className="text-sm font-semibold text-gray-300 mb-4 mt-2">{category}</h3>
               <ul className="space-y-3">
                 {links.map((link) => (
@@ -63,11 +63,11 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-16 pt-8 border-t border-gray-800/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-          <p className="text-xs text-gray-600">
+        <div className="mt-8 pt-8 border-t border-gray-800/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+          <p className="text-xs text-gray-600 mb-3">
             {t("copyright", { year: new Date().getFullYear() })}
           </p>
-          <p className="text-xs text-gray-600">
+          <p className="text-xs text-gray-600 mb-3">
             {t("etymology", { verus: "verus", factum: "factum" })}
           </p>
         </div>
