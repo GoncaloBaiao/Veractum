@@ -28,30 +28,36 @@ interface FactCheckResult {
  */
 export async function factCheckClaims(claims: Claim[], locale: string = "en"): Promise<FactCheckedClaim[]> {
   const batch = claims.slice(0, MAX_CLAIMS_PER_BATCH);
+  const results: FactCheckedClaim[] = [];
+  const CONCURRENCY = 3;
 
-  const results = await Promise.all(
-    batch.map(async (claim): Promise<FactCheckedClaim> => {
-      if (claim.type === "opinion") {
+  for (let i = 0; i < batch.length; i += CONCURRENCY) {
+    const chunk = batch.slice(i, i + CONCURRENCY);
+    const chunkResults = await Promise.all(
+      chunk.map(async (claim): Promise<FactCheckedClaim> => {
+        if (claim.type === "opinion") {
+          return {
+            ...claim,
+            status: "opinion",
+            confidence: 0,
+            reasoning:
+              "This is a subjective opinion or value judgment that cannot be objectively verified.",
+            sources: [],
+          };
+        }
+
+        const factCheckResult = await verifyClaim(claim, locale);
         return {
           ...claim,
-          status: "opinion",
-          confidence: 0,
-          reasoning:
-            "This is a subjective opinion or value judgment that cannot be objectively verified.",
-          sources: [],
+          status: factCheckResult.status,
+          confidence: factCheckResult.confidence,
+          reasoning: factCheckResult.reasoning,
+          sources: factCheckResult.sources,
         };
-      }
-
-      const factCheckResult = await verifyClaim(claim, locale);
-      return {
-        ...claim,
-        status: factCheckResult.status,
-        confidence: factCheckResult.confidence,
-        reasoning: factCheckResult.reasoning,
-        sources: factCheckResult.sources,
-      };
-    })
-  );
+      })
+    );
+    results.push(...chunkResults);
+  }
 
   return results;
 }

@@ -15,7 +15,15 @@ export function getPrismaClient(): PrismaClient | null {
   }
 
   if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = new PrismaClient();
+    const baseUrl = process.env.DATABASE_URL!;
+    const separator = baseUrl.includes("?") ? "&" : "?";
+    globalForPrisma.prisma = new PrismaClient({
+      datasources: {
+        db: {
+          url: baseUrl + separator + "connection_limit=10&pool_timeout=30",
+        },
+      },
+    });
   }
 
   return globalForPrisma.prisma;
