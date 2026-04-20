@@ -2,7 +2,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { LOCALE_LANGUAGE_MAP } from "@/lib/ai";
 import type { Claim, FactCheckedClaim, ClaimStatusValue, SourceReference } from "@/types";
 
-const MAX_CLAIMS_PER_BATCH = 15;
+const MAX_CLAIMS_PER_BATCH = 5;
 const GEMINI_MODEL = "gemini-2.5-flash";
 
 function getClient(): GoogleGenAI {
@@ -66,8 +66,16 @@ async function verifyClaim(claim: Claim, locale: string = "en"): Promise<FactChe
   const client = getClient();
   const language = LOCALE_LANGUAGE_MAP[locale] || "English";
 
-  // Attempt web search via Tavily for supporting evidence
-  const webEvidence = await searchForEvidence(claim.text);
+  // Web search with 8s timeout — skip gracefully if Tavily is slow
+  let webEvidence: string | null = null;
+  try {
+    webEvidence = await Promise.race([
+      searchForEvidence(claim.text),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
+    ]);
+  } catch {
+    webEvidence = null;
+  }
 
   try {
     const hasEvidence = webEvidence !== null && webEvidence.length > 0;
@@ -177,8 +185,8 @@ async function searchForEvidence(claimText: string): Promise<string | null> {
       body: JSON.stringify({
         api_key: tavilyKey,
         query: `fact check: ${claimText}`,
-        search_depth: "advanced",
-        max_results: 5,
+        search_depth: "basic",
+        max_results: 3,
         include_answer: true,
       }),
     });

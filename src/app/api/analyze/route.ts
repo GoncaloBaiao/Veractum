@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import {
   getPrismaClient,
   DATABASE_UNAVAILABLE_MESSAGE,
@@ -12,6 +13,8 @@ import { fetchTranscript } from "@/lib/transcription";
 import { generateSummary, extractClaims } from "@/lib/ai";
 import { factCheckClaims } from "@/lib/factcheck";
 import type { ApiResponse, AnalyzeResponse, Analysis, AnalysisListItem, FactCheckedClaim, Summary } from "@/types";
+
+export const maxDuration = 60; // Hobby plan cap — waitUntil keeps background work alive
 
 export async function POST(request: NextRequest): Promise<NextResponse<ApiResponse<AnalyzeResponse>>> {
   const prisma = getPrismaClient();
@@ -161,8 +164,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       );
     }
 
-    // Process in background (non-blocking)
-    processAnalysis(analysis.id, transcript, metadata.title, effectiveLocale, tierConfig.maxClaims).catch(console.error);
+    // Process in background — waitUntil keeps the function alive past the response
+    waitUntil(processAnalysis(analysis.id, transcript, metadata.title, effectiveLocale, tierConfig.maxClaims).catch(console.error));
 
     // Increment usage quota
     await prisma.usageQuota.upsert({
@@ -342,11 +345,11 @@ async function processAnalysis(
   }
 
   try {
-    // Step 1: Generate summary
-    const summary = await generateSummary(transcript, videoTitle, locale);
-
-    // Step 2: Extract claims
-    const claims = await extractClaims(transcript, locale, maxClaims);
+    // Steps 1 & 2: Generate summary and extract claims in parallel
+    const [summary, claims] = await Promise.all([
+      generateSummary(transcript, videoTitle, locale),
+      extractClaims(transcript, locale, maxClaims),
+    ]);
 
     // Step 3: Fact-check claims
     const factCheckedClaims = await factCheckClaims(claims, locale);
