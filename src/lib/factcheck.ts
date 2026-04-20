@@ -28,30 +28,30 @@ interface FactCheckResult {
  */
 export async function factCheckClaims(claims: Claim[], locale: string = "en"): Promise<FactCheckedClaim[]> {
   const batch = claims.slice(0, MAX_CLAIMS_PER_BATCH);
-  const results: FactCheckedClaim[] = [];
 
-  for (const claim of batch) {
-    if (claim.type === "opinion") {
-      results.push({
+  const results = await Promise.all(
+    batch.map(async (claim): Promise<FactCheckedClaim> => {
+      if (claim.type === "opinion") {
+        return {
+          ...claim,
+          status: "opinion",
+          confidence: 0,
+          reasoning:
+            "This is a subjective opinion or value judgment that cannot be objectively verified.",
+          sources: [],
+        };
+      }
+
+      const factCheckResult = await verifyClaim(claim, locale);
+      return {
         ...claim,
-        status: "opinion",
-        confidence: 0,
-        reasoning:
-          "This is a subjective opinion or value judgment that cannot be objectively verified.",
-        sources: [],
-      });
-      continue;
-    }
-
-    const factCheckResult = await verifyClaim(claim, locale);
-    results.push({
-      ...claim,
-      status: factCheckResult.status,
-      confidence: factCheckResult.confidence,
-      reasoning: factCheckResult.reasoning,
-      sources: factCheckResult.sources,
-    });
-  }
+        status: factCheckResult.status,
+        confidence: factCheckResult.confidence,
+        reasoning: factCheckResult.reasoning,
+        sources: factCheckResult.sources,
+      };
+    })
+  );
 
   return results;
 }

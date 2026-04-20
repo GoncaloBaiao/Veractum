@@ -28,8 +28,26 @@ export default function AnalysisPage() {
     if (id === "new") return;
 
     let cancelled = false;
+    let attempt = 0;
+    const MAX_WAIT_MS = 10 * 60 * 1000; // 10 minutes
+    const startTime = Date.now();
+
+    function getDelay(attempt: number): number {
+      if (attempt < 3) return 3000;
+      if (attempt < 6) return 5000;
+      if (attempt < 9) return 10000;
+      return 15000;
+    }
 
     async function fetchAnalysis() {
+      if (cancelled) return;
+
+      if (Date.now() - startTime > MAX_WAIT_MS) {
+        setError("Analysis is taking too long. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const response = await fetch(`/api/analyze?id=${encodeURIComponent(id)}`);
         const data: ApiResponse<Analysis> = await response.json();
@@ -45,9 +63,9 @@ export default function AnalysisPage() {
         const result = data.data;
 
         if (result.status === "PENDING" || result.status === "PROCESSING") {
-          // Simulate progressive steps
           setLoadingStep((prev) => Math.min(prev + 1, 3));
-          setTimeout(fetchAnalysis, 3000);
+          attempt++;
+          setTimeout(fetchAnalysis, getDelay(attempt));
           return;
         }
 
