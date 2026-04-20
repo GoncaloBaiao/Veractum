@@ -3,7 +3,7 @@ import { LOCALE_LANGUAGE_MAP } from "@/lib/ai";
 import type { Claim, FactCheckedClaim, ClaimStatusValue, SourceReference } from "@/types";
 
 const MAX_CLAIMS_PER_BATCH = 5;
-const GEMINI_MODEL = "gemini-2.5-flash";
+const GEMINI_MODEL = "gemini-2.0-flash";
 
 function getClient(): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
