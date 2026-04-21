@@ -24,8 +24,8 @@ export const TIERS: Record<string, TierConfig> = {
     name: "Analyst",
     maxAnalysesPerMonth: 30,
     maxDurationSeconds: 3600, // 1 hour
-    maxClaims: 8,
-    maxFactChecks: 8,
+    maxClaims: 10,
+    maxFactChecks: 10,
     allLanguages: true,
     historyAccess: "limited",
     historyDays: 10,
@@ -34,8 +34,8 @@ export const TIERS: Record<string, TierConfig> = {
     name: "Veractor",
     maxAnalysesPerMonth: Infinity,
     maxDurationSeconds: 21600, // 6 hours
-    maxClaims: 10,
-    maxFactChecks: 10,
+    maxClaims: 20,
+    maxFactChecks: 20,
     allLanguages: true,
     historyAccess: "unlimited",
     historyDays: Infinity,
