@@ -344,11 +344,18 @@ async function processAnalysis(
     return;
   }
 
+  // Truncate transcript to ~15,000 chars to stay within Vercel 60s timeout.
+  // 15k chars ≈ 2,500 words ≈ first ~20 minutes of content.
+  const MAX_TRANSCRIPT_CHARS = 15_000;
+  const truncatedTranscript = transcript.length > MAX_TRANSCRIPT_CHARS
+    ? transcript.slice(0, MAX_TRANSCRIPT_CHARS) + "\n\n[Transcript truncated for processing]"
+    : transcript;
+
   try {
     // Steps 1 & 2: Generate summary and extract claims in parallel
     const [summary, claims] = await Promise.all([
-      generateSummary(transcript, videoTitle, locale),
-      extractClaims(transcript, locale, maxClaims),
+      generateSummary(truncatedTranscript, videoTitle, locale),
+      extractClaims(truncatedTranscript, locale, maxClaims),
     ]);
 
     // Step 3: Fact-check claims
