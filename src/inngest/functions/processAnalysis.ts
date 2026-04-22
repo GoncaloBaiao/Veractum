@@ -23,17 +23,10 @@ export const processAnalysisJob = inngest.createFunction(
     const prisma = getPrismaClient();
     if (!prisma) return;
 
-    // Truncate transcript to ~15,000 chars
-    const MAX_TRANSCRIPT_CHARS = 15_000;
-    const truncatedTranscript =
-      transcript.length > MAX_TRANSCRIPT_CHARS
-        ? transcript.slice(0, MAX_TRANSCRIPT_CHARS) + "\n\n[Transcript truncated for processing]"
-        : transcript;
-
     try {
       const [summary, claims] = await Promise.all([
-        generateSummary(truncatedTranscript, videoTitle, locale),
-        extractClaims(truncatedTranscript, locale, maxClaims),
+        generateSummary(transcript, videoTitle, locale),
+        extractClaims(transcript, locale, maxClaims),
       ]);
 
       const factCheckedClaims = await factCheckClaims(claims, locale, maxClaims);

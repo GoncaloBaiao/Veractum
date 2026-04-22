@@ -25,6 +25,26 @@ function getClient(): GoogleGenAI {
   return new GoogleGenAI({ apiKey });
 }
 
+/**
+ * Sample the transcript evenly across its full length so analysis covers
+ * the entire video rather than just the beginning.
+ */
+function sampleTranscript(transcript: string, maxChars: number): string {
+  if (transcript.length <= maxChars) return transcript;
+  const NUM_SAMPLES = 12;
+  const sampleSize = Math.floor(maxChars / NUM_SAMPLES);
+  const step = Math.floor(transcript.length / NUM_SAMPLES);
+  const parts: string[] = [];
+  for (let i = 0; i < NUM_SAMPLES; i++) {
+    const start = i * step;
+    // Snap to next newline so we don't cut mid-sentence
+    const snapStart = transcript.indexOf("\n", start);
+    const from = snapStart !== -1 && snapStart - start < 200 ? snapStart + 1 : start;
+    parts.push(transcript.slice(from, from + sampleSize));
+  }
+  return parts.join("\n\n[...]\n\n");
+}
+
 async function withRetry<T>(fn: () => Promise<T>, retries = MAX_RETRIES): Promise<T> {
   let lastError: Error | null = null;
   for (let attempt = 0; attempt < retries; attempt++) {
@@ -61,8 +81,7 @@ export async function generateSummary(
   const client = getClient();
   const language = LOCALE_LANGUAGE_MAP[locale] || "English";
 
-  const truncatedTranscript =
-    transcript.length > 15000 ? transcript.slice(0, 15000) + "…" : transcript;
+  const truncatedTranscript = sampleTranscript(transcript, 60000);
 
   const result = await withRetry(async () => {
     const response = await client.models.generateContent({
@@ -159,8 +178,7 @@ export async function extractClaims(transcript: string, locale: string = "en", m
   const client = getClient();
   const language = LOCALE_LANGUAGE_MAP[locale] || "English";
 
-  const truncatedTranscript =
-    transcript.length > 10000 ? transcript.slice(0, 10000) + "…" : transcript;
+  const truncatedTranscript = sampleTranscript(transcript, 60000);
 
   let result: Record<string, unknown>;
   try {
