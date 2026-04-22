@@ -10,6 +10,7 @@ import { getTierConfig, parseDurationToSeconds } from "@/lib/tiers";
 import { extractYouTubeId } from "@/lib/utils";
 import { getVideoMetadata } from "@/lib/youtube";
 import { fetchTranscript } from "@/lib/transcription";
+import { sampleTranscript } from "@/lib/ai";
 import type { ApiResponse, AnalyzeResponse, Analysis, AnalysisListItem, FactCheckedClaim, Summary } from "@/types";
 
 export async function POST(request: NextRequest): Promise<NextResponse<ApiResponse<AnalyzeResponse>>> {
@@ -160,12 +161,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       );
     }
 
+    // Pre-sample transcript to stay under Inngest's 512KB event payload limit.
+    // sampleTranscript distributes evenly across the full video (no head-only bias).
+    const sampledTranscript = sampleTranscript(transcript, 200_000);
+
     // Trigger Inngest background job — no Vercel timeout constraints
     await inngest.send({
       name: "analysis/process",
       data: {
         analysisId: analysis.id,
-        transcript,
+        transcript: sampledTranscript,
         videoTitle: metadata.title,
         locale: effectiveLocale,
         maxClaims: tierConfig.maxClaims,

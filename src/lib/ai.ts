@@ -29,7 +29,7 @@ function getClient(): GoogleGenAI {
  * Sample the transcript evenly across its full length so analysis covers
  * the entire video rather than just the beginning.
  */
-function sampleTranscript(transcript: string, maxChars: number): string {
+export function sampleTranscript(transcript: string, maxChars: number): string {
   if (transcript.length <= maxChars) return transcript;
   const NUM_SAMPLES = 12;
   const sampleSize = Math.floor(maxChars / NUM_SAMPLES);
