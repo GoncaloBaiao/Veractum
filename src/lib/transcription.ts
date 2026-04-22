@@ -27,7 +27,7 @@ interface SupadataSegment {
 
 interface SupadataResponse {
   videoId: string;
-  content: SupadataSegment[];
+  content: SupadataSegment[] | string;
   lang: string;
   availableLangs: string[];
 }
@@ -41,28 +41,41 @@ export async function fetchTranscript(videoId: string): Promise<TranscriptRespon
     throw new Error(NO_CAPTIONS_FRIENDLY_MESSAGE);
   }
 
-  const url = `https://api.supadata.ai/v1/youtube/transcript?videoId=${encodeURIComponent(videoId)}&text=false`;
+  // First attempt: segmented transcript (text=false)
+  const result = await tryFetchTranscript(videoId, apiKey, false);
+  if (result) return result;
+
+  // Fallback: plain text transcript (handles auto-generated / partial captions)
+  console.log(`[transcript] Falling back to text=true for ${videoId}`);
+  const fallback = await tryFetchTranscript(videoId, apiKey, true);
+  if (fallback) return fallback;
+
+  throw new Error(NO_CAPTIONS_FRIENDLY_MESSAGE);
+}
+
+async function tryFetchTranscript(
+  videoId: string,
+  apiKey: string,
+  textMode: boolean
+): Promise<TranscriptResponse | null> {
+  const url = `https://api.supadata.ai/v1/youtube/transcript?videoId=${encodeURIComponent(videoId)}&text=${textMode}`;
 
   let response: Response;
   try {
-    response = await fetch(url, {
-      headers: {
-        "x-api-key": apiKey,
-      },
-    });
+    response = await fetch(url, { headers: { "x-api-key": apiKey } });
   } catch (error) {
     console.error("[transcript] Supadata request failed:", error instanceof Error ? error.message : error);
-    throw new Error(NO_CAPTIONS_FRIENDLY_MESSAGE);
+    return null;
   }
 
   if (response.status === 404) {
-    console.warn(`[transcript] Supadata: no transcript available for ${videoId}`);
-    throw new Error(NO_CAPTIONS_FRIENDLY_MESSAGE);
+    console.warn(`[transcript] Supadata: no transcript for ${videoId}`);
+    return null;
   }
 
   if (!response.ok) {
     console.error(`[transcript] Supadata returned ${response.status}`);
-    throw new Error(NO_CAPTIONS_FRIENDLY_MESSAGE);
+    return null;
   }
 
   let data: SupadataResponse;
@@ -70,26 +83,37 @@ export async function fetchTranscript(videoId: string): Promise<TranscriptRespon
     data = await response.json();
   } catch {
     console.error("[transcript] Supadata response is not valid JSON");
-    throw new Error(NO_CAPTIONS_FRIENDLY_MESSAGE);
+    return null;
   }
 
+  // text=true returns content as a plain string
+  if (textMode) {
+    const text = typeof data.content === "string" ? (data.content as string).trim() : "";
+    if (!text) return null;
+    console.log(`[transcript] Supadata text-mode success: ${text.length} chars, lang: ${data.lang}`);
+    return {
+      transcript: text,
+      segments: [{ text, start: 0, duration: 0 }],
+    };
+  }
+
+  // text=false returns content as an array of segments
   if (!Array.isArray(data.content) || data.content.length === 0) {
-    console.warn(`[transcript] Supadata returned empty content for ${videoId}`);
-    throw new Error(NO_CAPTIONS_FRIENDLY_MESSAGE);
+    console.warn(`[transcript] Supadata returned empty segments for ${videoId}`);
+    return null;
   }
 
-  const segments: TranscriptSegment[] = data.content.map((seg) => ({
-    text: seg.text.trim(),
-    start: seg.offset / 1000,      // ms → seconds
-    duration: seg.duration / 1000, // ms → seconds
-  })).filter((seg) => seg.text.length > 0);
+  const segments: TranscriptSegment[] = (data.content as SupadataSegment[])
+    .map((seg) => ({
+      text: seg.text.trim(),
+      start: seg.offset / 1000,
+      duration: seg.duration / 1000,
+    }))
+    .filter((seg) => seg.text.length > 0);
 
-  if (segments.length === 0) {
-    throw new Error(NO_CAPTIONS_FRIENDLY_MESSAGE);
-  }
+  if (segments.length === 0) return null;
 
   console.log(`[transcript] Supadata success: ${segments.length} segments, lang: ${data.lang}`);
-
   return {
     transcript: segments.map((s) => s.text).join(" "),
     segments,
