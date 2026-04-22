@@ -140,22 +140,40 @@ IMPORTANT:
       throw new Error("No response from Gemini.");
     }
 
-    const parsed = JSON.parse(content) as FactCheckResult;
+    let parsed: FactCheckResult;
+    try {
+      parsed = JSON.parse(content) as FactCheckResult;
+    } catch {
+      return {
+        status: "insufficient",
+        confidence: 30,
+        reasoning: "Unable to verify this claim due to a processing error.",
+        sources: [],
+      };
+    }
 
     return {
       status: parsed.status,
       confidence: Math.min(100, Math.max(0, parsed.confidence)),
       reasoning: parsed.reasoning,
-      sources: (parsed.sources || []).map((s: SourceReference) => ({
-        title: s.title,
-        url: s.url,
-        domain: s.domain,
-      })),
+      sources: (parsed.sources || [])
+        .filter((s: SourceReference) =>
+          s.url &&
+          s.url.startsWith("http") &&
+          !s.url.includes("veractum")
+        )
+        .map((s: SourceReference) => ({
+          title: s.title,
+          url: s.url,
+          domain: s.domain,
+        })),
     };
   } catch (error) {
-    const message = error instanceof Error
-      ? error.message
-      : "Unable to verify this claim due to a processing error.";
+    const raw = error instanceof Error ? error.message : "";
+    const message =
+      raw.length > 200 || raw.includes("<") || raw.startsWith("{")
+        ? "Unable to verify this claim due to a processing error."
+        : raw || "Unable to verify this claim due to a processing error.";
 
     return {
       status: "insufficient",
