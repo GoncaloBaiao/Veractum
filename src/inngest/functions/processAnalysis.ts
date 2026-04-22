@@ -1,6 +1,6 @@
 import { inngest } from "@/inngest/client";
 import { getPrismaClient, isDatabaseUnavailableError } from "@/lib/prisma";
-import { generateSummary, extractClaims } from "@/lib/ai";
+import { generateSummary, extractClaims, sampleTranscript } from "@/lib/ai";
 import { factCheckClaims } from "@/lib/factcheck";
 import type { FactCheckedClaim, Summary } from "@/types";
 
@@ -23,13 +23,16 @@ export const processAnalysisJob = inngest.createFunction(
     const prisma = getPrismaClient();
     if (!prisma) return;
 
-    // transcript is already evenly sampled across the full video by sampleTranscript() in route.ts
-    // do not re-truncate here — pass it through so AI sees the full temporal distribution
+    // transcript from route.ts is already evenly sampled across the full video.
+    // Re-sample to safe AI input sizes — this preserves full-video temporal coverage
+    // while keeping Gemini inputs small enough to avoid rate limits or parse errors.
+    const summaryTranscript = sampleTranscript(transcript, 15_000);
+    const claimsTranscript = sampleTranscript(transcript, 10_000);
 
     try {
       const [summary, claims] = await Promise.all([
-        generateSummary(transcript, videoTitle, locale),
-        extractClaims(transcript, locale, maxClaims),
+        generateSummary(summaryTranscript, videoTitle, locale),
+        extractClaims(claimsTranscript, locale, maxClaims),
       ]);
 
       const factCheckedClaims = await factCheckClaims(claims, locale, maxClaims);
