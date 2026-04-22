@@ -78,7 +78,7 @@ export async function generateSummary(
   const language = LOCALE_LANGUAGE_MAP[locale] || "English";
 
   const truncatedTranscript =
-    transcript.length > 15000 ? transcript.slice(0, 15000) + "…" : transcript;
+    transcript.length > 100000 ? transcript.slice(0, 100000) + "…" : transcript;
 
   const result = await withRetry(async () => {
     const response = await client.models.generateContent({
@@ -176,7 +176,7 @@ export async function extractClaims(transcript: string, locale: string = "en", m
   const language = LOCALE_LANGUAGE_MAP[locale] || "English";
 
   const truncatedTranscript =
-    transcript.length > 10000 ? transcript.slice(0, 10000) + "…" : transcript;
+    transcript.length > 80000 ? transcript.slice(0, 80000) + "…" : transcript;
 
   let result: Record<string, unknown>;
   try {
