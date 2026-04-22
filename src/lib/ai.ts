@@ -57,16 +57,25 @@ const SEGMENT_COLORS = [
  * Sample a transcript evenly across its full length to stay under a character limit.
  * Splits into equal-sized chunks and joins them to preserve temporal distribution.
  */
-export function sampleTranscript(transcript: string, maxChars: number): string {
+export function sampleTranscript(transcript: string, maxChars: number, videoDurationSecs?: number): string {
   if (transcript.length <= maxChars) return transcript;
   const CHUNKS = 10;
   const chunkSize = Math.floor(maxChars / CHUNKS);
   const step = Math.floor(transcript.length / CHUNKS);
   const parts: string[] = [];
   for (let i = 0; i < CHUNKS; i++) {
-    parts.push(transcript.slice(i * step, i * step + chunkSize));
+    const chunk = transcript.slice(i * step, i * step + chunkSize);
+    if (videoDurationSecs && videoDurationSecs > 0) {
+      const approxSecs = Math.round((i / CHUNKS) * videoDurationSecs);
+      const mm = Math.floor(approxSecs / 60);
+      const ss = approxSecs % 60;
+      const ts = `${mm}:${ss.toString().padStart(2, "0")}`;
+      parts.push(`[~${ts}]\n${chunk}`);
+    } else {
+      parts.push(chunk);
+    }
   }
-  return parts.join(" ");
+  return parts.join("\n\n");
 }
 
 export async function generateSummary(

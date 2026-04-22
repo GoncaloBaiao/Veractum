@@ -12,22 +12,23 @@ export const processAnalysisJob = inngest.createFunction(
     triggers: [{ event: "analysis/process" }],
   },
   async ({ event }) => {
-    const { analysisId, transcript, videoTitle, locale, maxClaims } = event.data as {
+    const { analysisId, transcript, videoTitle, locale, maxClaims, videoDurationSecs } = event.data as {
       analysisId: string;
       transcript: string;
       videoTitle: string;
       locale: string;
       maxClaims: number;
+      videoDurationSecs: number;
     };
 
     const prisma = getPrismaClient();
     if (!prisma) return;
 
     // transcript from route.ts is already evenly sampled across the full video.
-    // Re-sample to safe AI input sizes — this preserves full-video temporal coverage
-    // while keeping Gemini inputs small enough to avoid rate limits or parse errors.
-    const summaryTranscript = sampleTranscript(transcript, 15_000);
-    const claimsTranscript = sampleTranscript(transcript, 10_000);
+    // Re-sample to safe AI input sizes with real timestamp annotations so Gemini
+    // generates claims and segments spread across the full video duration.
+    const summaryTranscript = sampleTranscript(transcript, 15_000, videoDurationSecs);
+    const claimsTranscript = sampleTranscript(transcript, 10_000, videoDurationSecs);
 
     try {
       const [summary, claims] = await Promise.all([

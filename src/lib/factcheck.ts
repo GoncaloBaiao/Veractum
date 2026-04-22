@@ -4,6 +4,16 @@ import type { Claim, FactCheckedClaim, ClaimStatusValue, SourceReference } from 
 
 const GEMINI_MODEL = "gemini-2.5-flash";
 
+const INSUFFICIENT_DATA_MESSAGE: Record<string, string> = {
+  en: "Insufficient data to verify this claim.",
+  pt: "A IA não conseguiu encontrar dados suficientes para esta afirmação.",
+  es: "La IA no encontró datos suficientes para verificar esta afirmación.",
+  fr: "L'IA n'a pas trouvé suffisamment de données pour vérifier cette affirmation.",
+  de: "Die KI konnte diese Aussage mangels Daten nicht überprüfen.",
+  it: "L'IA non ha trovato dati sufficienti per verificare questa affermazione.",
+  zh: "AI 未能找到足够的数据来核实此声明。",
+};
+
 function getClient(): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) {
@@ -147,7 +157,7 @@ IMPORTANT:
       return {
         status: "insufficient",
         confidence: 30,
-        reasoning: "Unable to verify this claim due to a processing error.",
+        reasoning: INSUFFICIENT_DATA_MESSAGE[locale] ?? INSUFFICIENT_DATA_MESSAGE.en,
         sources: [],
       };
     }
@@ -170,10 +180,11 @@ IMPORTANT:
     };
   } catch (error) {
     const raw = error instanceof Error ? error.message : "";
+    const fallback = INSUFFICIENT_DATA_MESSAGE[locale] ?? INSUFFICIENT_DATA_MESSAGE.en;
     const message =
       raw.length > 200 || raw.includes("<") || raw.startsWith("{")
-        ? "Unable to verify this claim due to a processing error."
-        : raw || "Unable to verify this claim due to a processing error.";
+        ? fallback
+        : raw || fallback;
 
     return {
       status: "insufficient",

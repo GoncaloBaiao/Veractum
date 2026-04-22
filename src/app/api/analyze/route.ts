@@ -163,6 +163,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
     // Pre-sample transcript to stay under Inngest's 512KB event payload limit.
     // sampleTranscript distributes evenly across the full video (no head-only bias).
+    const videoDurationSecs = parseDuration(metadata.duration);
     const sampledTranscript = sampleTranscript(transcript, 200_000);
 
     // Trigger Inngest background job — no Vercel timeout constraints
@@ -174,6 +175,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         videoTitle: metadata.title,
         locale: effectiveLocale,
         maxClaims: tierConfig.maxClaims,
+        videoDurationSecs,
       },
     });
 
@@ -347,4 +349,11 @@ function getErrorMessage(error: unknown, fallback: string): string {
     return error.message;
   }
   return fallback;
+}
+
+/** Parse ISO 8601 duration (e.g. "PT1H49M19S") to total seconds. */
+function parseDuration(iso: string): number {
+  const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!m) return 0;
+  return (parseInt(m[1] || "0") * 3600) + (parseInt(m[2] || "0") * 60) + parseInt(m[3] || "0");
 }
