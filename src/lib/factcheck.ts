@@ -2,7 +2,6 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { LOCALE_LANGUAGE_MAP } from "@/lib/ai";
 import type { Claim, FactCheckedClaim, ClaimStatusValue, SourceReference } from "@/types";
 
-const MAX_CLAIMS_PER_BATCH = 5;
 const GEMINI_MODEL = "gemini-2.5-flash";
 
 function getClient(): GoogleGenAI {
@@ -26,8 +25,8 @@ interface FactCheckResult {
  * Fact-check an array of claims using OpenAI and (optionally) web search.
  * Opinions are auto-classified without web search.
  */
-export async function factCheckClaims(claims: Claim[], locale: string = "en"): Promise<FactCheckedClaim[]> {
-  const batch = claims.slice(0, MAX_CLAIMS_PER_BATCH);
+export async function factCheckClaims(claims: Claim[], locale: string = "en", maxClaims: number = 5): Promise<FactCheckedClaim[]> {
+  const batch = claims.slice(0, maxClaims);
   const results: FactCheckedClaim[] = [];
   const CONCURRENCY = 3;
 
