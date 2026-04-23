@@ -12,7 +12,7 @@
     "title2": "Comprendi tutto.",
     "subtitle": "Incolla un link YouTube. Veractum estrae la trascrizione, riassume ciò che è stato detto e verifica ogni affermazione — con le fonti.",
     "seeExample": "Vedi Esempio",
-    "trusted": "Usato da menti curiose. Nessun account necessario."
+    "trusted": "2 analisi gratuite • Nessuna carta di credito"
   },
   "videoInput": {
     "placeholder": "Incolla un link YouTube…",
@@ -160,7 +160,7 @@
     "step2": "Generazione riassunto…",
     "step3": "Estrazione affermazioni…",
     "step4": "Verifica fatti…",
-    "note": "Di solito richiede 15–30 secondi a seconda della durata del video."
+    "note": "L’analisi può richiedere da 1 a 3 minuti a seconda della durata del video."
   },
   "claimStatus": {
     "supported": "Confermato",

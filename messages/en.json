@@ -12,7 +12,7 @@
     "title2": "Understand everything.",
     "subtitle": "Paste a YouTube link. Veractum extracts the transcript, summarises what was said, and fact-checks every claim — with sources.",
     "seeExample": "See Example",
-    "trusted": "Trusted by curious minds. No account needed to try."
+    "trusted": "2 free analyses • No credit card required"
   },
   "videoInput": {
     "placeholder": "Paste a YouTube link…",
@@ -160,7 +160,7 @@
     "step2": "Generating summary…",
     "step3": "Extracting claims…",
     "step4": "Fact-checking…",
-    "note": "This usually takes 15–30 seconds depending on video length."
+    "note": "Analysis can take 1 to 3 minutes depending on video length."
   },
   "claimStatus": {
     "supported": "Supported",

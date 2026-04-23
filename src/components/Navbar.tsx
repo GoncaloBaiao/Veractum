@@ -109,6 +109,10 @@ export function Navbar() {
                     <User size={16} className="text-amber-400" />
                   </div>
                 )}
+                <span className={`hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border border-current/20 ${badge.color}`}>
+                  <Crown size={9} />
+                  {badge.label}
+                </span>
               </button>
               {showUserMenu && (
                 <div className="absolute right-0 top-full mt-2 w-56 bg-gray-900 border border-gray-800 rounded-xl shadow-xl shadow-black/30 overflow-hidden z-50">

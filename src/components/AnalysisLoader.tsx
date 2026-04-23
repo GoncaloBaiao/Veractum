@@ -5,17 +5,39 @@ import { Check, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { AnalysisLoaderProps } from "@/types";
 
+function PulsingOrb() {
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: 180, height: 180 }}>
+      {/* Outer rings */}
+      {[1, 2, 3].map((i) => (
+        <span
+          key={i}
+          className="absolute rounded-full border border-amber-500/20 animate-ping"
+          style={{
+            width: 60 + i * 40,
+            height: 60 + i * 40,
+            animationDelay: `${i * 0.4}s`,
+            animationDuration: "2.4s",
+          }}
+        />
+      ))}
+      {/* Core */}
+      <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg shadow-amber-500/40 flex items-center justify-center">
+        <Loader2 size={28} className="text-black animate-spin" />
+      </div>
+    </div>
+  );
+}
+
 export function AnalysisLoader({ currentStep }: AnalysisLoaderProps) {
   const t = useTranslations("analysisLoader");
   const steps = [t("step1"), t("step2"), t("step3"), t("step4")];
   return (
-    <div className="w-full max-w-md mx-auto py-16">
-      {/* Central spinner */}
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-        className="w-16 h-16 mx-auto mb-10 rounded-full border-2 border-gray-800 border-t-amber-500"
-      />
+    <div className="w-full max-w-md mx-auto py-10">
+      {/* Animated orb */}
+      <div className="w-full flex justify-center items-center mb-8" style={{ height: "200px" }}>
+        <PulsingOrb />
+      </div>
 
       {/* Steps */}
       <div className="space-y-4" role="status" aria-live="polite">

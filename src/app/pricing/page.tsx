@@ -54,9 +54,9 @@ export default function PricingPage() {
       comparison: {
         analysesPerMonth: "30",
         maxDuration: "1h",
-        claimsPerAnalysis: "8",
+        claimsPerAnalysis: "10",
         allLanguages: true,
-        analysisHistory: "10 days",
+        analysisHistory: "10 dias",
         priorityProcessing: false,
         aiModelChoice: false,
       },
@@ -73,7 +73,7 @@ export default function PricingPage() {
       comparison: {
         analysesPerMonth: t("unlimited"),
         maxDuration: "6h",
-        claimsPerAnalysis: "10",
+        claimsPerAnalysis: "20",
         allLanguages: true,
         analysisHistory: t("unlimited"),
         priorityProcessing: true,

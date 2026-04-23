@@ -1,5 +1,6 @@
-"use client";
+﻿"use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, Coffee, ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -14,10 +15,17 @@ const AMOUNTS = [
   { value: 3, emoji: "☕", label: "Coffee" },
   { value: 5, emoji: "🧁", label: "Snack" },
   { value: 10, emoji: "🍕", label: "Pizza" },
+  { value: 25, emoji: "🚀", label: "Boost" },
 ];
+
+const PAYPAL_ME = "https://paypal.me/GoncaloBaiao";
 
 export default function DonatePage() {
   const t = useTranslations("donate");
+  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+  const [customAmount, setCustomAmount] = useState("");
+
+  const finalAmount = customAmount ? parseInt(customAmount, 10) : selectedAmount ?? 5;
 
   return (
     <div className="pt-36 pb-28">
@@ -40,7 +48,6 @@ export default function DonatePage() {
           <div className="w-16 h-16 rounded-2xl bg-pink-500/10 flex items-center justify-center mx-auto mb-6">
             <Heart size={32} className="text-pink-400" />
           </div>
-
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-gray-100 mb-4">
             {t("title")}
           </h1>
@@ -49,38 +56,80 @@ export default function DonatePage() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-12">
+        {/* Preset amounts */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           {AMOUNTS.map((amount, index) => (
             <motion.button
               key={amount.value}
               initial="hidden"
               animate="visible"
               variants={fadeInUp}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group relative bg-gray-900 border-2 border-gray-800 rounded-2xl p-6 hover:border-amber-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10 text-center"
-              onClick={() => {
-                // Placeholder — payment integration coming soon
-              }}
+              transition={{ duration: 0.5, delay: index * 0.08 }}
+              className={`group relative bg-gray-900 border-2 rounded-2xl p-5 transition-all duration-300 text-center ${
+                selectedAmount === amount.value && !customAmount
+                  ? "border-amber-500 shadow-lg shadow-amber-500/10"
+                  : "border-gray-800 hover:border-amber-500/50"
+              }`}
+              onClick={() => { setSelectedAmount(amount.value); setCustomAmount(""); }}
             >
-              <span className="text-4xl mb-3 block">{amount.emoji}</span>
-              <span className="text-2xl font-black text-gray-100">€{amount.value}</span>
-              <p className="text-sm text-gray-500 mt-1">{t(`amount${amount.value}`)}</p>
-              <div className="mt-4 flex items-center justify-center gap-1.5 text-sm font-medium text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Coffee size={14} />
+              <span className="text-3xl mb-2 block">{amount.emoji}</span>
+              <span className="text-xl font-black text-gray-100">€{amount.value}</span>
+              <div className="mt-2 flex items-center justify-center gap-1 text-xs font-medium text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Coffee size={11} />
                 {t("support")}
               </div>
             </motion.button>
           ))}
         </div>
 
+        {/* Custom amount */}
         <motion.div
           initial="hidden"
           animate="visible"
           variants={fadeInUp}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.35 }}
+          className="mb-8"
+        >
+          <label className="text-sm text-gray-400 mb-2 block">Ou introduz um valor personalizado (€)</label>
+          <div className="flex gap-3">
+            <input
+              type="number"
+              min="1"
+              value={customAmount}
+              onChange={(e) => { setCustomAmount(e.target.value); setSelectedAmount(null); }}
+              placeholder="Ex: 7"
+              className="flex-1 px-4 py-3 rounded-xl bg-gray-800 border border-gray-700 text-gray-200 placeholder:text-gray-500 focus:outline-none focus:border-amber-500/50 text-sm"
+            />
+            <a
+              href={`${PAYPAL_ME}/${finalAmount}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-6 py-3 text-sm transition-all whitespace-nowrap"
+            >
+              Doar €{finalAmount}
+            </a>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUp}
+          transition={{ duration: 0.5, delay: 0.45 }}
           className="text-center"
         >
-          <p className="text-sm text-gray-600">
+          {selectedAmount && !customAmount && (
+            <a
+              href={`${PAYPAL_ME}/${selectedAmount}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-10 py-3.5 text-sm transition-all hover:shadow-lg hover:shadow-amber-500/25 mb-6"
+            >
+              <Heart size={16} />
+              Doar €{selectedAmount} via PayPal
+            </a>
+          )}
+          <p className="text-xs text-gray-600 mt-4">
             {t("comingSoon")}
           </p>
         </motion.div>

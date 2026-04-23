@@ -12,7 +12,7 @@
     "title2": "Verstehe alles.",
     "subtitle": "Füge einen YouTube-Link ein. Veractum extrahiert das Transkript, fasst das Gesagte zusammen und überprüft jede Behauptung — mit Quellen.",
     "seeExample": "Beispiel ansehen",
-    "trusted": "Von neugierigen Köpfen genutzt. Kein Konto nötig."
+    "trusted": "2 kostenlose Analysen • Keine Kreditkarte erforderlich"
   },
   "videoInput": {
     "placeholder": "YouTube-Link einfügen…",
@@ -160,7 +160,7 @@
     "step2": "Zusammenfassung wird generiert…",
     "step3": "Behauptungen werden extrahiert…",
     "step4": "Fakten werden überprüft…",
-    "note": "Dies dauert normalerweise 15–30 Sekunden je nach Videolänge."
+    "note": "Die Analyse kann 1 bis 3 Minuten dauern, je nach Videolänge."
   },
   "claimStatus": {
     "supported": "Bestätigt",
