@@ -1,42 +1,38 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, Loader2 } from "lucide-react";
+import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { AnalysisLoaderProps } from "@/types";
 
-function PulsingOrb() {
-  return (
-    <div className="relative flex items-center justify-center" style={{ width: 180, height: 180 }}>
-      {/* Outer rings */}
-      {[1, 2, 3].map((i) => (
-        <span
-          key={i}
-          className="absolute rounded-full border border-amber-500/20 animate-ping"
-          style={{
-            width: 60 + i * 40,
-            height: 60 + i * 40,
-            animationDelay: `${i * 0.4}s`,
-            animationDuration: "2.4s",
-          }}
-        />
-      ))}
-      {/* Core */}
-      <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg shadow-amber-500/40 flex items-center justify-center">
-        <Loader2 size={28} className="text-black animate-spin" />
-      </div>
-    </div>
-  );
-}
+const STEP_CLIPS = [
+  "/clip1.mp4",
+  "/clip2.mp4",
+  "/clip3.mp4",
+  "/clip4.mp4",
+];
 
 export function AnalysisLoader({ currentStep }: AnalysisLoaderProps) {
   const t = useTranslations("analysisLoader");
   const steps = [t("step1"), t("step2"), t("step3"), t("step4")];
+
+  // Show the current step clip, or last clip if all done
+  const clipIndex = Math.min(currentStep, STEP_CLIPS.length - 1);
+  const clipSrc = STEP_CLIPS[clipIndex];
+
   return (
     <div className="w-full max-w-md mx-auto py-10">
-      {/* Animated orb */}
-      <div className="w-full flex justify-center items-center mb-8" style={{ height: "200px" }}>
-        <PulsingOrb />
+      {/* Video clip */}
+      <div className="w-full flex justify-center items-center mb-8 rounded-2xl overflow-hidden bg-gray-900" style={{ height: "280px" }}>
+        <video
+          key={clipSrc}
+          src={clipSrc}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-contain"
+        />
       </div>
 
       {/* Steps */}
@@ -71,7 +67,11 @@ export function AnalysisLoader({ currentStep }: AnalysisLoaderProps) {
                   </motion.div>
                 ) : isActive ? (
                   <div className="w-7 h-7 rounded-full bg-amber-500/20 flex items-center justify-center">
-                    <Loader2 size={14} className="text-amber-400 animate-spin" />
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                      className="w-3 h-3 rounded-full bg-amber-400"
+                    />
                   </div>
                 ) : (
                   <div className="w-7 h-7 rounded-full bg-gray-800 flex items-center justify-center">
