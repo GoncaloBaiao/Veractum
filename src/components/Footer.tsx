@@ -15,14 +15,14 @@ export function Footer() {
       { label: t("donate"), href: "/donate" },
     ],
     [t("resources")]: [
-      { label: t("documentation"), href: "#" },
-      { label: t("apiReference"), href: "#" },
-      { label: t("changelog"), href: "#" },
+      { label: t("documentation"), href: "/docs" },
+      { label: t("apiReference"), href: "/docs/api" },
+      { label: t("changelog"), href: "/changelog" },
     ],
     [t("legal")]: [
-      { label: t("privacyPolicy"), href: "#" },
-      { label: t("termsOfService"), href: "#" },
-      { label: t("cookiePolicy"), href: "#" },
+      { label: t("privacyPolicy"), href: "/privacy" },
+      { label: t("termsOfService"), href: "/terms" },
+      { label: t("cookiePolicy"), href: "/cookies" },
     ],
   };
 
