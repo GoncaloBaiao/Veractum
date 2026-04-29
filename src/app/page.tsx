@@ -220,7 +220,7 @@ export default function HomePage() {
             <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-gray-100 mb-6">
               {heroT("title1")}
               <br />
-              <span className="gradient-text">{heroT("title2")}</span>
+              <span className="gradient-text"> {heroT("title2")}</span>
             </h1>
           </motion.div>
 
