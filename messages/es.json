@@ -230,7 +230,8 @@
     "amount5": "Invita un snack",
     "amount10": "Invita una pizza",
     "support": "Apoyar",
-    "comingSoon": "Integración de pago próximamente. ¡Gracias por tu interés!"
+    "comingSoon": "Integración de pago próximamente. ¡Gracias por tu interés!",
+    "customAmountLabel": "O introduce un importe personalizado (€)"
   },
   "tierBadge": {
     "free": "Observer",

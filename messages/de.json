@@ -230,7 +230,8 @@
     "amount5": "Einen Snack spendieren",
     "amount10": "Eine Pizza spendieren",
     "support": "Unterstützen",
-    "comingSoon": "Zahlungsintegration kommt bald. Vielen Dank für dein Interesse!"
+    "comingSoon": "Zahlungsintegration kommt bald. Vielen Dank für dein Interesse!",
+    "customAmountLabel": "Oder gib einen eigenen Betrag ein (€)"
   },
   "tierBadge": {
     "free": "Observer",

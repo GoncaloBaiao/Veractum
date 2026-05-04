@@ -230,7 +230,8 @@
     "amount5": "Offri uno spuntino",
     "amount10": "Offri una pizza",
     "support": "Sostieni",
-    "comingSoon": "Integrazione pagamenti in arrivo. Grazie per il tuo interesse!"
+    "comingSoon": "Integrazione pagamenti in arrivo. Grazie per il tuo interesse!",
+    "customAmountLabel": "Oppure inserisci un importo personalizzato (€)"
   },
   "tierBadge": {
     "free": "Observer",

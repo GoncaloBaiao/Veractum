@@ -98,7 +98,7 @@
     "veractorF4": "All 9 languages",
     "veractorF5": "Unlimited history",
     "veractorF6": "Priority processing",
-    "veractorF7": "\u26a1 AI Model Choice (coming soon)",
+    "veractorF7": "⚡ AI Model Choice (coming soon)",
     "veractorCTA": "Go Veractor",
     "compareTitle": "Feature Comparison",
     "feature": "Feature",
@@ -230,7 +230,8 @@
     "amount5": "Buy a snack",
     "amount10": "Buy a pizza",
     "support": "Support",
-    "comingSoon": "Payment integration coming soon. Thank you for your interest!"
+    "comingSoon": "Payment integration coming soon. Thank you for your interest!",
+    "customAmountLabel": "Or enter a custom amount (€)"
   },
   "tierBadge": {
     "free": "Observer",

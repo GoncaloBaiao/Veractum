@@ -284,7 +284,7 @@ export default function HomePage() {
           >
             <span className="text-label mb-3 inline-block">{howT("label")}</span>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-100">
-              {howT("title", { highlight: "" })}<span className="gradient-text">{howT("highlight")}</span>
+              {howT("title", { highlight: "" })}<span className="gradient-text"> {howT("highlight")}</span>
             </h2>
           </motion.div>
 
@@ -331,7 +331,7 @@ export default function HomePage() {
             <span className="text-label mb-3 inline-block">{featT("label")}</span>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-100">
               {featT("title", { highlight: "" })}{" "}
-              <span className="gradient-text">{featT("highlight")}</span>
+              <span className="gradient-text">{ featT("highlight")}</span>
             </h2>
           </motion.div>
 
@@ -379,7 +379,7 @@ export default function HomePage() {
           >
             <span className="text-label mb-3 inline-block">{demoT("label")}</span>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-100">
-              {demoT("title", { highlight: "" })}<span className="gradient-text">{demoT("highlight")}</span>
+              {demoT("title", { highlight: "" })}<span className="gradient-text"> {demoT("highlight")}</span>
             </h2>
           </motion.div>
 

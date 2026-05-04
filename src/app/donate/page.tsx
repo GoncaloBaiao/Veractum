@@ -18,7 +18,7 @@ const AMOUNTS = [
   { value: 25, emoji: "🚀", label: "Boost" },
 ];
 
-const PAYPAL_ME = "https://paypal.me/GoncaloBaiao";
+const REVOLUT_ME = "https://revolut.me/gugabaiao";
 
 export default function DonatePage() {
   const t = useTranslations("donate");
@@ -90,7 +90,7 @@ export default function DonatePage() {
           transition={{ duration: 0.5, delay: 0.35 }}
           className="mb-8"
         >
-          <label className="text-sm text-gray-400 mb-2 block">Ou introduz um valor personalizado (€)</label>
+          <label className="text-sm text-gray-400 mb-2 block">{t("customAmountLabel")}</label>
           <div className="flex gap-3">
             <input
               type="number"
@@ -101,12 +101,12 @@ export default function DonatePage() {
               className="flex-1 px-4 py-3 rounded-xl bg-gray-800 border border-gray-700 text-gray-200 placeholder:text-gray-500 focus:outline-none focus:border-amber-500/50 text-sm"
             />
             <a
-              href={`${PAYPAL_ME}/${finalAmount}`}
+              href={`${REVOLUT_ME}/${finalAmount}`}
               target="_blank"
               rel="noopener noreferrer"
               className="bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-6 py-3 text-sm transition-all whitespace-nowrap"
             >
-              Doar €{finalAmount}
+              Doar €{finalAmount} via Revolut
             </a>
           </div>
         </motion.div>
@@ -120,13 +120,13 @@ export default function DonatePage() {
         >
           {selectedAmount && !customAmount && (
             <a
-              href={`${PAYPAL_ME}/${selectedAmount}`}
+              href={`${REVOLUT_ME}/${selectedAmount}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-10 py-3.5 text-sm transition-all hover:shadow-lg hover:shadow-amber-500/25 mb-6"
             >
               <Heart size={16} />
-              Doar €{selectedAmount} via PayPal
+              Doar €{selectedAmount} via Revolut
             </a>
           )}
           <p className="text-xs text-gray-600 mt-4">

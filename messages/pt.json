@@ -98,7 +98,7 @@
     "veractorF4": "Todos os 9 idiomas",
     "veractorF5": "Histórico ilimitado",
     "veractorF6": "Processamento prioritário",
-    "veractorF7": "\u26a1 Escolha de Modelo IA (em breve)",
+    "veractorF7": "⚡ Escolha de Modelo IA (em breve)",
     "veractorCTA": "Ser Veractor",
     "compareTitle": "Comparação de Funcionalidades",
     "feature": "Funcionalidade",
@@ -230,7 +230,8 @@
     "amount5": "Oferecer um lanche",
     "amount10": "Oferecer uma pizza",
     "support": "Apoiar",
-    "comingSoon": "Integração de pagamento em breve. Obrigado pelo teu interesse!"
+    "comingSoon": "Integração de pagamento em breve. Obrigado pelo teu interesse!",
+    "customAmountLabel": "Ou introduz um valor personalizado (€)"
   },
   "tierBadge": {
     "free": "Observer",

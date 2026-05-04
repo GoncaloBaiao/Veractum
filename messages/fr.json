@@ -230,7 +230,8 @@
     "amount5": "Offrir un goûter",
     "amount10": "Offrir une pizza",
     "support": "Soutenir",
-    "comingSoon": "Intégration de paiement bientôt disponible. Merci de votre intérêt !"
+    "comingSoon": "Intégration de paiement bientôt disponible. Merci de votre intérêt !",
+    "customAmountLabel": "Ou saisissez un montant personnalisé (€)"
   },
   "tierBadge": {
     "free": "Observer",
