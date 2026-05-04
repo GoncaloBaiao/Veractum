@@ -124,7 +124,7 @@ export default function ApiDocsPage() {
 
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-gray-100 mb-4 pb-2 border-b border-gray-800">Authentication</h2>
-          <p className="text-gray-400">All endpoints require a valid NextAuth session cookie. Sign in via <Code>/api/auth/signin</Code> using Google, GitHub, or Twitter. The session token is set automatically as an HTTP-only cookie.</p>
+          <p className="text-gray-400">All endpoints require a valid NextAuth session cookie. Sign in via <Code>/api/auth/signin</Code> using Google OAuth. The session token is set automatically as an HTTP-only cookie.</p>
         </section>
       </div>
     </div>

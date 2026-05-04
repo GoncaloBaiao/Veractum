@@ -24,7 +24,7 @@ An AI-powered web application that analyses YouTube videos — extracting struct
 | Framework | Next.js 15 (App Router, TypeScript strict) |
 | Styling | Tailwind CSS v4 |
 | Database | PostgreSQL via Prisma ORM |
-| Auth | NextAuth.js v5 (Google + GitHub) |
+| Auth | NextAuth.js v5 (Google OAuth) |
 | AI | OpenAI GPT-4o (summary, claims, fact-check) |
 | Web Search | Tavily API (evidence gathering) |
 | Fonts | Geist Sans + Geist Mono |

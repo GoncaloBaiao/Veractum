@@ -57,7 +57,7 @@ const changes = [
       "Claim extraction and fact-checking with Gemini 2.5 Flash",
       "Visual topic timeline with colour-coded segments",
       "Multi-language support for 9 locales",
-      "Google, GitHub, and Twitter OAuth sign-in",
+      "Google OAuth sign-in",
       "Analysis history for authenticated users",
     ],
   },

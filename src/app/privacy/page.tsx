@@ -18,7 +18,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-gray-100 mb-3">1. Data We Collect</h2>
-            <p>When you sign in to Veractum, we collect your name, email address, and profile picture from your OAuth provider (Google, GitHub, or Twitter/X). We store the YouTube video URLs you submit for analysis and the analysis results generated for your account.</p>
+            <p>When you sign in to Veractum, we collect your name, email address, and profile picture from your Google OAuth provider. We store the YouTube video URLs you submit for analysis and the analysis results generated for your account.</p>
           </section>
 
           <section>
