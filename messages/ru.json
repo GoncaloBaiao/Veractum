@@ -1,4 +1,4 @@
-{
+﻿{
   "nav": {
     "howItWorks": "Как это работает",
     "pricing": "Цены",
@@ -230,10 +230,10 @@
     "amount5": "Купить перекус",
     "amount10": "Купить пиццу",
     "support": "Поддержать",
-    "comingSoon": "Интеграция платежей скоро. Спасибо за ваш интерес!",
+    "comingSoon": "Безопасные платежи через Stripe.",
     "customAmountLabel": "Или введите свою сумму (€)",
     "amount25": "Дать толчок",
-    "donateButton": "Пожертвовать через Revolut"
+    "donateButton": "Пожертвовать через Stripe"
   },
   "tierBadge": {
     "free": "Observer",

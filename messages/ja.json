@@ -1,4 +1,4 @@
-{
+﻿{
   "nav": {
     "howItWorks": "使い方",
     "pricing": "料金",
@@ -230,10 +230,10 @@
     "amount5": "おやつをおごる",
     "amount10": "ピザをおごる",
     "support": "支援する",
-    "comingSoon": "決済連携は近日公開予定です。ご関心ありがとうございます！",
+    "comingSoon": "Stripe による安全な決済。",
     "customAmountLabel": "または金額を自分で入力（€）",
     "amount25": "ブーストする",
-    "donateButton": "Revolut で寄付する"
+    "donateButton": "Stripe で寄付する"
   },
   "tierBadge": {
     "free": "Observer",

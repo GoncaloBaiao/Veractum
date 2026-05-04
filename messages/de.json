@@ -1,4 +1,4 @@
-{
+﻿{
   "nav": {
     "howItWorks": "So funktioniert's",
     "pricing": "Preise",
@@ -230,10 +230,10 @@
     "amount5": "Einen Snack spendieren",
     "amount10": "Eine Pizza spendieren",
     "support": "Unterstützen",
-    "comingSoon": "Zahlungsintegration kommt bald. Vielen Dank für dein Interesse!",
+    "comingSoon": "Sichere Zahlungen mit Stripe.",
     "customAmountLabel": "Oder gib einen eigenen Betrag ein (€)",
     "amount25": "Einen Boost geben",
-    "donateButton": "Spenden via Revolut"
+    "donateButton": "Spenden via Stripe"
   },
   "tierBadge": {
     "free": "Observer",

@@ -1,4 +1,4 @@
-{
+﻿{
   "nav": {
     "howItWorks": "Comment ça marche",
     "pricing": "Tarifs",
@@ -230,10 +230,10 @@
     "amount5": "Offrir un goûter",
     "amount10": "Offrir une pizza",
     "support": "Soutenir",
-    "comingSoon": "Intégration de paiement bientôt disponible. Merci de votre intérêt !",
+    "comingSoon": "Paiements sécurisés avec Stripe.",
     "customAmountLabel": "Ou saisissez un montant personnalisé (€)",
     "amount25": "Donner un coup de pouce",
-    "donateButton": "Faire un don via Revolut"
+    "donateButton": "Faire un don via Stripe"
   },
   "tierBadge": {
     "free": "Observer",

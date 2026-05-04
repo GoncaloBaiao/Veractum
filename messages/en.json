@@ -1,4 +1,4 @@
-{
+﻿{
   "nav": {
     "howItWorks": "How it Works",
     "pricing": "Pricing",
@@ -230,10 +230,10 @@
     "amount5": "Buy a snack",
     "amount10": "Buy a pizza",
     "support": "Support",
-    "comingSoon": "Payment integration coming soon. Thank you for your interest!",
+    "comingSoon": "Secure payments powered by Stripe.",
     "customAmountLabel": "Or enter a custom amount (€)",
     "amount25": "Give a boost",
-    "donateButton": "Donate via Revolut"
+    "donateButton": "Donate via Stripe"
   },
   "tierBadge": {
     "free": "Observer",
