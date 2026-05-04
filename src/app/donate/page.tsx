@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, ArrowLeft } from "lucide-react";
+import { Heart, ArrowLeft, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
@@ -18,14 +18,31 @@ const AMOUNTS = [
   { value: 25, emoji: "🚀", key: "amount25" },
 ];
 
-const REVOLUT_ME = "https://revolut.me/gugabaiao";
-
 export default function DonatePage() {
   const t = useTranslations("donate");
-  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+  const [selectedAmount, setSelectedAmount] = useState<number>(5);
   const [customAmount, setCustomAmount] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const finalAmount = customAmount ? parseInt(customAmount, 10) : selectedAmount ?? 5;
+  const finalAmount = customAmount ? parseFloat(customAmount) : selectedAmount;
+
+  const handleDonate = async () => {
+    if (!finalAmount || finalAmount <= 0) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "donation", amount: finalAmount.toString() }),
+      });
+      const data = await res.json() as { url?: string; error?: string };
+      if (data.url) window.location.href = data.url;
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="pt-36 pb-28">
@@ -93,18 +110,18 @@ export default function DonatePage() {
               type="number"
               min="1"
               value={customAmount}
-              onChange={(e) => { setCustomAmount(e.target.value); setSelectedAmount(null); }}
+              onChange={(e) => { setCustomAmount(e.target.value); setSelectedAmount(5); }}
               placeholder="Ex: 7"
               className="flex-1 px-4 py-3 rounded-xl bg-gray-800 border border-gray-700 text-gray-200 placeholder:text-gray-500 focus:outline-none focus:border-amber-500/50 text-sm"
             />
-            <a
-              href={`${REVOLUT_ME}/${finalAmount}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-6 py-3 text-sm transition-all whitespace-nowrap"
+            <button
+              onClick={() => void handleDonate()}
+              disabled={loading || !finalAmount || finalAmount <= 0}
+              className="bg-amber-500 hover:bg-amber-600 disabled:opacity-60 disabled:cursor-not-allowed text-black font-bold rounded-xl px-6 py-3 text-sm transition-all whitespace-nowrap flex items-center gap-2"
             >
-              {t("donateButton")} (€{finalAmount})
-            </a>
+              {loading ? <Loader2 size={16} className="animate-spin" /> : null}
+              {t("donateButton")} (€{finalAmount > 0 ? finalAmount : "?"})
+            </button>
           </div>
         </motion.div>
 
@@ -115,16 +132,15 @@ export default function DonatePage() {
           transition={{ duration: 0.5, delay: 0.45 }}
           className="text-center"
         >
-          {selectedAmount && !customAmount && (
-            <a
-              href={`${REVOLUT_ME}/${selectedAmount}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-10 py-3.5 text-sm transition-all hover:shadow-lg hover:shadow-amber-500/25 mb-6"
+          {!customAmount && (
+            <button
+              onClick={() => void handleDonate()}
+              disabled={loading}
+              className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-60 disabled:cursor-not-allowed text-black font-bold rounded-xl px-10 py-3.5 text-sm transition-all hover:shadow-lg hover:shadow-amber-500/25 mb-6"
             >
-              <Heart size={16} />
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <Heart size={16} />}
               {t("donateButton")} (€{selectedAmount})
-            </a>
+            </button>
           )}
           <p className="text-xs text-gray-600 mt-4">
             {t("comingSoon")}

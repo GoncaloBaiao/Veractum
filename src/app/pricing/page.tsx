@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
-import { Check, X as XIcon, ArrowRight, Sparkles, ChevronDown } from "lucide-react";
+import { Check, X as XIcon, ArrowRight, Sparkles, ChevronDown, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 const fadeInUp = {
@@ -21,8 +23,52 @@ const FEATURE_ROWS = [
 ] as const;
 
 export default function PricingPage() {
+  return (
+    <Suspense>
+      <PricingContent />
+    </Suspense>
+  );
+}
+
+function PricingContent() {
   const t = useTranslations("pricing");
+  const { data: session } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [loadingTier, setLoadingTier] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ type: "success" | "info"; message: string } | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get("success") === "true") {
+      setToast({ type: "success", message: "Subscrição activada! Bem-vindo." });
+      router.replace("/pricing");
+    } else if (searchParams.get("cancelled") === "true") {
+      setToast({ type: "info", message: "Pagamento cancelado." });
+      router.replace("/pricing");
+    }
+  }, [searchParams, router]);
+
+  const handleCheckout = async (tier: "analyst" | "veractor") => {
+    if (!session) {
+      router.push("/?login=true");
+      return;
+    }
+    setLoadingTier(tier);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: tier }),
+      });
+      const data = await res.json() as { url?: string; error?: string };
+      if (data.url) window.location.href = data.url;
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingTier(null);
+    }
+  };
 
   const tiers = [
     {
@@ -94,6 +140,17 @@ export default function PricingPage() {
   return (
     <div className="pt-36 pb-28">
       <div className="page-container">
+        {/* Toast */}
+        {toast && (
+          <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl font-semibold text-sm shadow-xl border ${
+            toast.type === "success"
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
+              : "bg-blue-500/10 border-blue-500/30 text-blue-300"
+          }`}>
+            {toast.message}
+            <button onClick={() => setToast(null)} className="ml-2 opacity-60 hover:opacity-100">&times;</button>
+          </div>
+        )}
         {/* Header */}
         <motion.div
           initial="hidden"
@@ -158,14 +215,23 @@ export default function PricingPage() {
               </ul>
 
               <button
-                className={`w-full flex items-center justify-center gap-2 font-bold rounded-xl px-6 py-3.5 text-sm transition-all ${
+                onClick={() => {
+                  if (tier.key === "analyst" || tier.key === "veractor") {
+                    void handleCheckout(tier.key as "analyst" | "veractor");
+                  }
+                }}
+                disabled={loadingTier === tier.key}
+                className={`w-full flex items-center justify-center gap-2 font-bold rounded-xl px-6 py-3.5 text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
                   tier.highlighted
                     ? "bg-amber-500 hover:bg-amber-600 text-black hover:shadow-lg hover:shadow-amber-500/25"
                     : "border-2 border-gray-700 hover:border-amber-400 text-gray-300 hover:text-white"
                 }`}
               >
-                {tier.cta}
-                <ArrowRight size={16} />
+                {loadingTier === tier.key ? (
+                  <><Loader2 size={16} className="animate-spin" /> A redirecionar...</>
+                ) : (
+                  <>{tier.cta}{tier.key !== "observer" && <ArrowRight size={16} />}</>
+                )}
               </button>
             </motion.div>
           ))}
