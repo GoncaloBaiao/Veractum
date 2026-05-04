@@ -231,7 +231,9 @@
     "amount10": "Купить пиццу",
     "support": "Поддержать",
     "comingSoon": "Интеграция платежей скоро. Спасибо за ваш интерес!",
-    "customAmountLabel": "Или введите свою сумму (€)"
+    "customAmountLabel": "Или введите свою сумму (€)",
+    "amount25": "Дать толчок",
+    "donateButton": "Пожертвовать через Revolut"
   },
   "tierBadge": {
     "free": "Observer",

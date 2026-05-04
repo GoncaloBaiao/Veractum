@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, Coffee, ArrowLeft } from "lucide-react";
+import { Heart, ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
@@ -12,10 +12,10 @@ const fadeInUp = {
 };
 
 const AMOUNTS = [
-  { value: 3, emoji: "☕", label: "Coffee" },
-  { value: 5, emoji: "🧁", label: "Snack" },
-  { value: 10, emoji: "🍕", label: "Pizza" },
-  { value: 25, emoji: "🚀", label: "Boost" },
+  { value: 3, emoji: "☕", key: "amount3" },
+  { value: 5, emoji: "🧁", key: "amount5" },
+  { value: 10, emoji: "🍕", key: "amount10" },
+  { value: 25, emoji: "🚀", key: "amount25" },
 ];
 
 const REVOLUT_ME = "https://revolut.me/gugabaiao";
@@ -74,10 +74,7 @@ export default function DonatePage() {
             >
               <span className="text-3xl mb-2 block">{amount.emoji}</span>
               <span className="text-xl font-black text-gray-100">€{amount.value}</span>
-              <div className="mt-2 flex items-center justify-center gap-1 text-xs font-medium text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Coffee size={11} />
-                {t("support")}
-              </div>
+              <p className="text-xs text-gray-400 mt-1">{t(amount.key)}</p>
             </motion.button>
           ))}
         </div>
@@ -106,7 +103,7 @@ export default function DonatePage() {
               rel="noopener noreferrer"
               className="bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-6 py-3 text-sm transition-all whitespace-nowrap"
             >
-              Doar €{finalAmount} via Revolut
+              {t("donateButton")} (€{finalAmount})
             </a>
           </div>
         </motion.div>
@@ -126,7 +123,7 @@ export default function DonatePage() {
               className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-10 py-3.5 text-sm transition-all hover:shadow-lg hover:shadow-amber-500/25 mb-6"
             >
               <Heart size={16} />
-              Doar €{selectedAmount} via Revolut
+              {t("donateButton")} (€{selectedAmount})
             </a>
           )}
           <p className="text-xs text-gray-600 mt-4">

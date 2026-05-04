@@ -231,7 +231,9 @@
     "amount10": "请吃披萨",
     "support": "支持",
     "comingSoon": "支付集成即将上线。感谢您的关注！",
-    "customAmountLabel": "或输入自定义金额（€）"
+    "customAmountLabel": "或输入自定义金额（€）",
+    "amount25": "加油助力",
+    "donateButton": "通过 Revolut 捍款"
   },
   "tierBadge": {
     "free": "Observer",

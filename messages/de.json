@@ -231,7 +231,9 @@
     "amount10": "Eine Pizza spendieren",
     "support": "Unterstützen",
     "comingSoon": "Zahlungsintegration kommt bald. Vielen Dank für dein Interesse!",
-    "customAmountLabel": "Oder gib einen eigenen Betrag ein (€)"
+    "customAmountLabel": "Oder gib einen eigenen Betrag ein (€)",
+    "amount25": "Einen Boost geben",
+    "donateButton": "Spenden via Revolut"
   },
   "tierBadge": {
     "free": "Observer",

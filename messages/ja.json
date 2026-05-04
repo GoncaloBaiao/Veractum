@@ -231,7 +231,9 @@
     "amount10": "ピザをおごる",
     "support": "支援する",
     "comingSoon": "決済連携は近日公開予定です。ご関心ありがとうございます！",
-    "customAmountLabel": "または金額を自分で入力（€）"
+    "customAmountLabel": "または金額を自分で入力（€）",
+    "amount25": "ブーストする",
+    "donateButton": "Revolut で寄付する"
   },
   "tierBadge": {
     "free": "Observer",

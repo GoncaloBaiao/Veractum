@@ -231,7 +231,9 @@
     "amount10": "Invita una pizza",
     "support": "Apoyar",
     "comingSoon": "Integración de pago próximamente. ¡Gracias por tu interés!",
-    "customAmountLabel": "O introduce un importe personalizado (€)"
+    "customAmountLabel": "O introduce un importe personalizado (€)",
+    "amount25": "Dar un impulso",
+    "donateButton": "Donar via Revolut"
   },
   "tierBadge": {
     "free": "Observer",

@@ -231,7 +231,9 @@
     "amount10": "Offri una pizza",
     "support": "Sostieni",
     "comingSoon": "Integrazione pagamenti in arrivo. Grazie per il tuo interesse!",
-    "customAmountLabel": "Oppure inserisci un importo personalizzato (€)"
+    "customAmountLabel": "Oppure inserisci un importo personalizzato (€)",
+    "amount25": "Dare una spinta",
+    "donateButton": "Dona via Revolut"
   },
   "tierBadge": {
     "free": "Observer",

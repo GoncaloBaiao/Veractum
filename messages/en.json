@@ -231,7 +231,9 @@
     "amount10": "Buy a pizza",
     "support": "Support",
     "comingSoon": "Payment integration coming soon. Thank you for your interest!",
-    "customAmountLabel": "Or enter a custom amount (€)"
+    "customAmountLabel": "Or enter a custom amount (€)",
+    "amount25": "Give a boost",
+    "donateButton": "Donate via Revolut"
   },
   "tierBadge": {
     "free": "Observer",
