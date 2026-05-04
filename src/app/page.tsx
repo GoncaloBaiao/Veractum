@@ -93,54 +93,6 @@ const STATUS_CONFIG = {
   },
 } as const;
 
-const STEPS = [
-  {
-    icon: LinkIcon,
-    title: "Paste a YouTube Link",
-    description:
-      "Drop any YouTube URL into Veractum. We support standard watch links, short links, and embedded URLs.",
-  },
-  {
-    icon: Brain,
-    title: "AI Extracts & Analyses",
-    description:
-      "Our AI fetches the transcript, generates a structured summary, extracts claims, and fact-checks each one.",
-  },
-  {
-    icon: FileCheck,
-    title: "Get Your Report",
-    description:
-      "Receive a comprehensive report with key points, a visual timeline, and every claim rated with sources.",
-  },
-];
-
-const FEATURES = [
-  {
-    icon: Zap,
-    title: "Instant Summary",
-    description:
-      "Get the key points of any video in seconds. No more scrubbing through hours of content to find what matters.",
-  },
-  {
-    icon: Search,
-    title: "Claim Extraction",
-    description:
-      "AI identifies every factual statement, opinion, and prediction — then separates signal from noise.",
-  },
-  {
-    icon: Shield,
-    title: "Source-backed Fact-check",
-    description:
-      "Every claim is checked against real sources. See the evidence, not just a verdict.",
-  },
-  {
-    icon: BarChart3,
-    title: "Visual Timeline",
-    description:
-      "A colour-coded timeline shows what was discussed and when, so you can jump straight to what matters.",
-  },
-];
-
 const fadeInUp = {
   hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0 },

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, FileCheck, Loader2, LogIn } from "lucide-react";
+import { ArrowLeft, Clock, FileCheck, Loader2, LogIn, AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatDate } from "@/lib/utils";
 import type { AnalysisListItem, ApiResponse } from "@/types";
@@ -14,6 +14,7 @@ export default function HistoryPage() {
   const [analyses, setAnalyses] = useState<AnalysisListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchHistory() {
@@ -37,9 +38,11 @@ export default function HistoryPage() {
             return true;
           });
           setAnalyses(unique);
+        } else if (!data.success) {
+          setFetchError(data.error ?? "Failed to load history.");
         }
       } catch {
-        // Silently handle — show empty state
+        setFetchError("Failed to connect to the server. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -76,6 +79,27 @@ export default function HistoryPage() {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
         <Loader2 size={32} className="text-amber-400 animate-spin" />
+      </div>
+    );
+  }
+
+  // Fetch error
+  if (fetchError) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <div className="page-container text-center max-w-lg">
+          <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-6">
+            <AlertCircle size={28} className="text-red-400" />
+          </div>
+          <h1 className="text-xl font-bold text-gray-100 mb-3">Failed to load history</h1>
+          <p className="text-gray-400 mb-8">{fetchError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-6 py-3 text-sm transition-all"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }

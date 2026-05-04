@@ -13,6 +13,8 @@ import { fetchTranscript } from "@/lib/transcription";
 import { sampleTranscript } from "@/lib/ai";
 import type { ApiResponse, AnalyzeResponse, Analysis, AnalysisListItem, FactCheckedClaim, Summary } from "@/types";
 
+const VALID_LOCALES = new Set(["en", "pt", "es", "fr", "de", "it", "zh", "ja", "ru"]);
+
 export async function POST(request: NextRequest): Promise<NextResponse<ApiResponse<AnalyzeResponse>>> {
   const prisma = getPrismaClient();
   if (!prisma) {
@@ -25,7 +27,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
   try {
     const body = await request.json();
     const url: unknown = body?.url;
-    const locale: string = typeof body?.locale === "string" ? body.locale : "en";
+    const rawLocale: unknown = body?.locale;
+    const safeLocale: string = typeof rawLocale === "string" && VALID_LOCALES.has(rawLocale) ? rawLocale : "en";
 
     // Auth check
     const session = await auth();
@@ -41,7 +44,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
     const tierConfig = getTierConfig(userTier);
 
     // Language restriction for free tier
-    const effectiveLocale = tierConfig.allLanguages ? locale : "en";
+    const effectiveLocale = tierConfig.allLanguages ? safeLocale : "en";
 
     if (typeof url !== "string" || !url.trim()) {
       return NextResponse.json(
@@ -163,8 +166,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
     // Pre-sample transcript to stay under Inngest's 512KB event payload limit.
     // sampleTranscript distributes evenly across the full video (no head-only bias).
-    const videoDurationSecs = parseDuration(metadata.duration);
+    const videoDurationSecs = parseDurationToSeconds(metadata.duration);
     const sampledTranscript = sampleTranscript(transcript, 200_000);
+
+    // Increment usage quota before firing the job so quota is never bypassed
+    // even if inngest.send() succeeds but the response is lost.
+    await prisma.usageQuota.upsert({
+      where: { userId_month: { userId, month: currentMonth } },
+      update: { analysisCount: { increment: 1 } },
+      create: { userId, month: currentMonth, analysisCount: 1 },
+    });
 
     // Trigger Inngest background job — no Vercel timeout constraints
     await inngest.send({
@@ -177,13 +188,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         maxClaims: tierConfig.maxClaims,
         videoDurationSecs,
       },
-    });
-
-    // Increment usage quota
-    await prisma.usageQuota.upsert({
-      where: { userId_month: { userId, month: currentMonth } },
-      update: { analysisCount: { increment: 1 } },
-      create: { userId, month: currentMonth, analysisCount: 1 },
     });
 
     return NextResponse.json(
@@ -290,6 +294,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
   }
 
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { success: false, error: "Authentication required." },
+      { status: 401 }
+    );
+  }
+
   try {
     const analysis = await prisma.analysis.findUnique({
       where: { id },
@@ -297,6 +309,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     if (!analysis) {
+      return NextResponse.json(
+        { success: false, error: "Analysis not found." },
+        { status: 404 }
+      );
+    }
+
+    if (analysis.userId !== session.user.id) {
       return NextResponse.json(
         { success: false, error: "Analysis not found." },
         { status: 404 }
@@ -349,11 +368,4 @@ function getErrorMessage(error: unknown, fallback: string): string {
     return error.message;
   }
   return fallback;
-}
-
-/** Parse ISO 8601 duration (e.g. "PT1H49M19S") to total seconds. */
-function parseDuration(iso: string): number {
-  const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-  if (!m) return 0;
-  return (parseInt(m[1] || "0") * 3600) + (parseInt(m[2] || "0") * 60) + parseInt(m[3] || "0");
 }

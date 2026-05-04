@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractYouTubeId } from "@/lib/utils";
 import { fetchTranscript } from "@/lib/transcription";
+import { auth } from "@/lib/auth";
 import type { ApiResponse } from "@/types";
 
 interface TranscriptData {
@@ -11,6 +12,14 @@ interface TranscriptData {
 export async function POST(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<TranscriptData>>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { success: false, error: "Authentication required." },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await request.json();
     const url: unknown = body?.url;

@@ -94,6 +94,7 @@ export function Navbar() {
             <div ref={userMenuRef} className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
+                aria-label="User menu"
                 className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-gray-800/50 transition-colors"
               >
                 {session.user.image ? (
@@ -125,7 +126,7 @@ export function Navbar() {
                     </span>
                   </div>
                   <button
-                    onClick={() => { setShowUserMenu(false); signOut(); }}
+                    onClick={() => { setShowUserMenu(false); void signOut(); }}
                     className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-400 hover:bg-gray-800/50 hover:text-gray-100 transition-colors"
                   >
                     <LogOut size={14} />
@@ -195,7 +196,7 @@ export function Navbar() {
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${badge.color}`}>{badge.label}</span>
                 </div>
                 <button
-                  onClick={() => { setIsMobileOpen(false); signOut(); }}
+                  onClick={() => { setIsMobileOpen(false); void signOut(); }}
                   className="flex items-center gap-2 text-gray-400 hover:text-gray-100 transition-colors py-2"
                 >
                   <LogOut size={14} />

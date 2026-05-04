@@ -50,7 +50,14 @@ export function ClaimCard({ claim }: ClaimCardProps) {
           <span className="text-xs text-gray-500">{t("confidence")}</span>
           <span className="text-xs font-mono text-gray-400">{claim.confidence}%</span>
         </div>
-        <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+        <div
+          role="progressbar"
+          aria-valuenow={claim.confidence}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`Confidence: ${claim.confidence}%`}
+          className="h-2 bg-gray-800 rounded-full overflow-hidden"
+        >
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${claim.confidence}%` }}

@@ -70,7 +70,8 @@ export default function AnalysisPage() {
         }
 
         if (result.status === "FAILED") {
-          setError("Analysis failed. Please try again with a different video.");
+          const failedSummary = result.summary as unknown as { error?: string } | null;
+          setError(failedSummary?.error ?? "Analysis failed. Please try again with a different video.");
           setIsLoading(false);
           return;
         }

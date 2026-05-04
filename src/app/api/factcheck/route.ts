@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { factCheckClaims } from "@/lib/factcheck";
+import { auth } from "@/lib/auth";
 import type { ApiResponse, Claim, FactCheckedClaim } from "@/types";
+
+const VALID_CLAIM_TYPES = new Set(["factual", "opinion", "prediction"]);
 
 export async function POST(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<FactCheckedClaim[]>>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { success: false, error: "Authentication required." },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await request.json();
     const claims: unknown = body?.claims;
@@ -23,10 +34,11 @@ export async function POST(
         typeof claim !== "object" ||
         claim === null ||
         typeof (claim as Record<string, unknown>).text !== "string" ||
-        typeof (claim as Record<string, unknown>).type !== "string"
+        typeof (claim as Record<string, unknown>).type !== "string" ||
+        !VALID_CLAIM_TYPES.has((claim as Record<string, unknown>).type as string)
       ) {
         return NextResponse.json(
-          { success: false, error: "Each claim must have a text and type field." },
+          { success: false, error: "Each claim must have a text and a valid type (factual, opinion, prediction)." },
           { status: 400 }
         );
       }

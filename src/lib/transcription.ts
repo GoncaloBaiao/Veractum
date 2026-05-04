@@ -33,8 +33,6 @@ interface SupadataResponse {
 }
 
 export async function fetchTranscript(videoId: string): Promise<TranscriptResponse> {
-  console.log(`[transcript] Fetching transcript for videoId: ${videoId}`);
-
   const apiKey = process.env.SUPADATA_API_KEY;
   if (!apiKey) {
     console.error("[transcript] SUPADATA_API_KEY is not set");
