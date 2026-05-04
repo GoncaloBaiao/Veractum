@@ -155,6 +155,7 @@ export default function HomePage() {
   const demoT = useTranslations("demo");
   const ctaT = useTranslations("cta");
   const extT = useTranslations("extension");
+  const supportT = useTranslations("support");
 
   const [extEmail, setExtEmail] = useState("");
   const [extStatus, setExtStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -593,16 +594,16 @@ export default function HomePage() {
             <div className="absolute top-0 left-0 w-80 h-80 bg-gradient-to-br from-amber-600/8 to-transparent rounded-full blur-3xl pointer-events-none" />
             <div className="text-4xl mb-4">☕</div>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-100 mb-3">
-              Apoia o <span className="gradient-text">Veractum</span>
+              {supportT("headingPrefix")} <span className="gradient-text">Veractum</span>
             </h2>
             <p className="max-w-lg mx-auto text-gray-400 leading-relaxed mb-8">
-              O Veractum é desenvolvido de forma independente. O teu apoio financia os servidores, APIs e futuros updates.
+              {supportT("description")}
             </p>
             <a
               href="/donate"
               className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-8 py-3.5 transition-all hover:shadow-lg hover:shadow-amber-500/30 text-sm"
             >
-              Apoiar o projeto <ArrowRight size={16} />
+              {supportT("cta")} <ArrowRight size={16} />
             </a>
           </motion.div>
         </div>

@@ -244,5 +244,10 @@
     "limitReached": "Monthly analysis limit reached. Upgrade for more.",
     "languageLocked": "Other languages require Analyst plan or higher.",
     "upgradeToUnlock": "Upgrade to unlock"
+  },
+  "support": {
+    "headingPrefix": "Support",
+    "description": "Veractum is independently developed. Your support funds the servers, APIs and future updates.",
+    "cta": "Support the project"
   }
 }

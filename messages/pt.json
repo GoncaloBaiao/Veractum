@@ -244,5 +244,10 @@
     "limitReached": "Limite mensal de análises atingido. Atualiza para mais.",
     "languageLocked": "Outros idiomas requerem o plano Analyst ou superior.",
     "upgradeToUnlock": "Atualizar para desbloquear"
+  },
+  "support": {
+    "headingPrefix": "Apoia o",
+    "description": "O Veractum e desenvolvido de forma independente. O teu apoio financia os servidores, APIs e futuros updates.",
+    "cta": "Apoiar o projeto"
   }
 }

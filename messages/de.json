@@ -244,5 +244,10 @@
     "limitReached": "Monatliches Analyselimit erreicht. Upgrade für mehr.",
     "languageLocked": "Andere Sprachen erfordern den Analyst-Plan oder höher.",
     "upgradeToUnlock": "Upgrade zum Freischalten"
+  },
+  "support": {
+    "headingPrefix": "Unterstuetze",
+    "description": "Veractum wird unabhaengig entwickelt. Deine Unterstuetzung finanziert Server, APIs und kuenftige Updates.",
+    "cta": "Projekt unterstuetzen"
   }
 }

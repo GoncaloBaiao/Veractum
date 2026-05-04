@@ -244,5 +244,10 @@
     "limitReached": "Limite mensuelle d'analyses atteinte. Passez à la version supérieure pour plus.",
     "languageLocked": "Les autres langues nécessitent le forfait Analyst ou supérieur.",
     "upgradeToUnlock": "Passer à la version supérieure"
+  },
+  "support": {
+    "headingPrefix": "Soutenir",
+    "description": "Veractum est developpe de maniere independante. Votre soutien finance les serveurs, les API et les futures mises a jour.",
+    "cta": "Soutenir le projet"
   }
 }
