@@ -221,7 +221,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       where: { userId_month: { userId, month: currentMonth } },
       update: {
         analysisCount: { increment: 1 },
-        dailyCount: dailyDate === today ? { increment: 1 } : 1,
+        dailyCount: dailyDate === today ? { increment: 1 } : { set: 1 },
         dailyDate: today,
       },
       create: {
