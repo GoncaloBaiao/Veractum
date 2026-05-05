@@ -1,6 +1,7 @@
 export interface TierConfig {
   name: string;
   maxAnalysesPerMonth: number;
+  maxDailyAnalyses: number;
   maxDurationSeconds: number;
   maxClaims: number;
   maxFactChecks: number;
@@ -12,7 +13,8 @@ export interface TierConfig {
 export const TIERS: Record<string, TierConfig> = {
   free: {
     name: "Observer",
-    maxAnalysesPerMonth: 2,
+    maxAnalysesPerMonth: 1,
+    maxDailyAnalyses: 1,
     maxDurationSeconds: 600, // 10 min
     maxClaims: 5,
     maxFactChecks: 5,
@@ -22,7 +24,8 @@ export const TIERS: Record<string, TierConfig> = {
   },
   analyst: {
     name: "Analyst",
-    maxAnalysesPerMonth: 30,
+    maxAnalysesPerMonth: 20,
+    maxDailyAnalyses: 3,
     maxDurationSeconds: 3600, // 1 hour
     maxClaims: 10,
     maxFactChecks: 10,
@@ -32,7 +35,8 @@ export const TIERS: Record<string, TierConfig> = {
   },
   veractor: {
     name: "Veractor",
-    maxAnalysesPerMonth: Infinity,
+    maxAnalysesPerMonth: 60,
+    maxDailyAnalyses: 10,
     maxDurationSeconds: 21600, // 6 hours
     maxClaims: 20,
     maxFactChecks: 20,

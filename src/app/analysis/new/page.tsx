@@ -47,6 +47,11 @@ function NewAnalysisContent() {
           return;
         }
 
+        if (response.status === 429) {
+          setError(data.error ?? "Rate limit reached. Please try again later.");
+          return;
+        }
+
         if (!data.success || !data.data) {
           setError(data.error ?? "Failed to start analysis.");
           return;

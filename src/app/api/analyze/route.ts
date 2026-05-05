@@ -43,6 +43,29 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
     const userTier = (session.user as { tier?: string }).tier ?? "free";
     const tierConfig = getTierConfig(userTier);
 
+    // ── IP + Date (needed for rate limiting) ─────────────────────────────
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      request.headers.get("x-real-ip") ??
+      "unknown";
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+    // ── IP Rate Limiting (anti-abuse for free tier) ───────────────────────
+    if (userTier === "free" && ip !== "unknown") {
+      const ipRecord = await prisma.ipRateLimit.findUnique({
+        where: { ip_date: { ip, date: today } },
+      });
+      if (ipRecord && ipRecord.count >= 1) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Daily limit reached for this network. Upgrade to Analyst for more analyses.",
+          },
+          { status: 429 }
+        );
+      }
+    }
+
     // Language restriction for free tier
     const effectiveLocale = tierConfig.allLanguages ? safeLocale : "en";
 
@@ -92,6 +115,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       return NextResponse.json(
         { success: false, error: `Monthly analysis limit reached (${tierConfig.maxAnalysesPerMonth}). Upgrade for more.` },
         { status: 403 }
+      );
+    }
+
+    // ── Daily quota check (all tiers) ────────────────────────────────────
+    const dailyDate = quota?.dailyDate ?? "";
+    const dailyCount = dailyDate === today ? (quota?.dailyCount ?? 0) : 0;
+    if (dailyCount >= tierConfig.maxDailyAnalyses) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Daily limit of ${tierConfig.maxDailyAnalyses} ${tierConfig.maxDailyAnalyses === 1 ? "analysis" : "analyses"} reached. Come back tomorrow.`,
+        },
+        { status: 429 }
       );
     }
 
@@ -171,10 +207,30 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
     // Increment usage quota before firing the job so quota is never bypassed
     // even if inngest.send() succeeds but the response is lost.
+    // Increment IP rate limit (free tier only)
+    if (userTier === "free" && ip !== "unknown") {
+      await prisma.ipRateLimit.upsert({
+        where: { ip_date: { ip, date: today } },
+        update: { count: { increment: 1 } },
+        create: { ip, date: today, count: 1 },
+      });
+    }
+
+    // Update monthly + daily quota
     await prisma.usageQuota.upsert({
       where: { userId_month: { userId, month: currentMonth } },
-      update: { analysisCount: { increment: 1 } },
-      create: { userId, month: currentMonth, analysisCount: 1 },
+      update: {
+        analysisCount: { increment: 1 },
+        dailyCount: dailyDate === today ? { increment: 1 } : 1,
+        dailyDate: today,
+      },
+      create: {
+        userId,
+        month: currentMonth,
+        analysisCount: 1,
+        dailyCount: 1,
+        dailyDate: today,
+      },
     });
 
     // Trigger Inngest background job — no Vercel timeout constraints

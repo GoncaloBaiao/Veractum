@@ -134,6 +134,8 @@ model UsageQuota {
   userId        String
   month         String
   analysisCount Int    @default(0)
+  dailyCount    Int    @default(0)
+  dailyDate     String @default("")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -148,4 +150,17 @@ model ExtensionWaitlist {
   createdAt DateTime @default(now())
 
   @@map("extension_waitlist")
+}
+
+model IpRateLimit {
+  id        String   @id @default(cuid())
+  ip        String
+  date      String
+  count     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([ip, date])
+  @@index([ip])
+  @@map("ip_rate_limits")
 }
