@@ -143,12 +143,12 @@ export function Navbar() {
               >
                 {t("signIn")}
               </button>
-              <Link
-                href="/#hero"
+              <button
+                onClick={() => setShowLogin(true)}
                 className="bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-6 py-2.5 text-sm transition-all hover:shadow-lg hover:shadow-amber-500/25"
               >
                 {t("tryFree")}
-              </Link>
+              </button>
             </>
           )}
         </div>
@@ -211,13 +211,12 @@ export function Navbar() {
                 >
                   {t("signIn")}
                 </button>
-                <Link
-                  href="/#hero"
-                  onClick={() => setIsMobileOpen(false)}
+                <button
+                  onClick={() => { setIsMobileOpen(false); setShowLogin(true); }}
                   className="bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-6 py-3 text-sm text-center transition-all"
                 >
                   {t("tryFree")}
-                </Link>
+                </button>
               </>
             )}
           </div>
