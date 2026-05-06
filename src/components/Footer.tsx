@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { BrandLogo } from "@/components/BrandLogo";
 
 export function Footer() {
   const t = useTranslations("footer");
+  const pathname = usePathname();
+
+  if (pathname === "/") return null;
 
   const footerLinks = {
     [t("product")]: [

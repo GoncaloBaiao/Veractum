@@ -59,6 +59,18 @@ body {
   scrollbar-color: #374151 #0a0a0f;
 }
 
+/* ─── Dossier Homepage (mobile) ─── */
+@media (max-width: 768px) {
+  .dossier-board {
+    position: relative !important;
+    height: auto !important;
+    overflow-y: auto !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+    padding-bottom: 40px !important;
+  }
+}
+
 /* ─── Selection ─── */
 
 ::selection {

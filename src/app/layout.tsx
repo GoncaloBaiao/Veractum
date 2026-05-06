@@ -60,6 +60,14 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://api.fontshare.com" />
+        <link rel="preconnect" href="https://cdn.fontshare.com" crossOrigin="anonymous" />
+        <link
+          href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="bg-[#0a0a0f] text-gray-100 antialiased font-sans min-h-screen flex flex-col">
         {shouldLoadGa ? (
           <>

@@ -1,598 +1,372 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import {
-  Link as LinkIcon,
-  Brain,
-  FileCheck,
-  Zap,
-  Search,
-  Shield,
-  BarChart3,
-  Play,
-  User,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  MessageCircle,
-  ExternalLink,
-  ArrowRight,
-  Chrome,
-  Mail,
-  Check,
-} from "lucide-react";
-import { VideoInput } from "@/components/VideoInput";
+import Link from "next/link";
+import { SplashScreen } from "@/components/SplashScreen";
 
-/* ─── Fake demo data ─── */
+const FONT: React.CSSProperties = { fontFamily: "'Satoshi', system-ui, sans-serif" };
+const ACCENT = "#E8A020";
 
-const DEMO_CLAIMS = [
-  {
-    text: "The global average temperature has risen by 1.1°C since pre-industrial times.",
-    status: "supported" as const,
-    confidence: 92,
-    sources: [
-      { title: "IPCC Sixth Assessment Report", domain: "ipcc.ch" },
-      { title: "NASA Global Temperature", domain: "climate.nasa.gov" },
-    ],
-    reasoning:
-      "This claim is well-supported by multiple authoritative scientific sources including the IPCC AR6 and NASA GISS datasets.",
-  },
-  {
-    text: "Renewable energy is now cheaper than fossil fuels in every country.",
-    status: "contested" as const,
-    confidence: 45,
-    sources: [
-      { title: "IRENA Renewable Cost Report 2024", domain: "irena.org" },
-    ],
-    reasoning:
-      "While renewables are cheaper in many regions, this absolute claim is contested — some developing nations still face higher renewable costs due to infrastructure gaps.",
-  },
-  {
-    text: "This is the most important decade for climate action in human history.",
-    status: "opinion" as const,
-    confidence: 0,
-    sources: [],
-    reasoning:
-      "This is a value judgment and rhetorical framing. While many scientists emphasize urgency, 'most important' is subjective.",
-  },
-] as const;
+function Corners() {
+  const s: React.CSSProperties = {
+    position: "absolute",
+    width: 12,
+    height: 12,
+    borderColor: ACCENT,
+    borderStyle: "solid",
+    opacity: 0.4,
+  };
+  return (
+    <>
+      <span style={{ ...s, top: 8, left: 8, borderWidth: "1px 0 0 1px" }} />
+      <span style={{ ...s, top: 8, right: 8, borderWidth: "1px 1px 0 0" }} />
+      <span style={{ ...s, bottom: 8, left: 8, borderWidth: "0 0 1px 1px" }} />
+      <span style={{ ...s, bottom: 8, right: 8, borderWidth: "0 1px 1px 0" }} />
+    </>
+  );
+}
 
-const DEMO_SUMMARY_POINTS = [
-  "The video discusses the latest climate science findings from the 2024 IPCC update.",
-  "Key focus on temperature rise, tipping points, and renewable energy cost trends.",
-  "Concludes with a call to action for policy changes in the next five years.",
-];
+function Pin() {
+  return (
+    <span
+      style={{
+        position: "absolute",
+        width: 12,
+        height: 12,
+        borderRadius: "50%",
+        background: ACCENT,
+        top: -6,
+        left: "50%",
+        transform: "translateX(-50%)",
+        boxShadow: "0 0 8px rgba(232,160,32,0.5)",
+        zIndex: 2,
+      }}
+    />
+  );
+}
 
-const STATUS_CONFIG = {
-  supported: {
-    icon: CheckCircle,
-    label: "Supported",
-    color: "text-emerald-400",
-    bg: "bg-emerald-400/10",
-    border: "border-emerald-400/30",
-    barColor: "bg-emerald-500",
-  },
-  contested: {
-    icon: AlertTriangle,
-    label: "Contested",
-    color: "text-red-400",
-    bg: "bg-red-400/10",
-    border: "border-red-400/30",
-    barColor: "bg-amber-500",
-  },
-  opinion: {
-    icon: MessageCircle,
-    label: "Opinion",
-    color: "text-gray-400",
-    bg: "bg-gray-400/10",
-    border: "border-gray-400/30",
-    barColor: "bg-gray-500",
-  },
-} as const;
+function ScanLine({ active }: { active: boolean }) {
+  return (
+    <motion.div
+      initial={{ top: 0, opacity: 0 }}
+      animate={active ? { top: "100%", opacity: [1, 1, 0] } : { top: 0, opacity: 0 }}
+      transition={{ duration: 0.8, ease: "easeIn" }}
+      style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        height: 2,
+        background: "linear-gradient(90deg,transparent,rgba(232,160,32,0.6),transparent)",
+        pointerEvents: "none",
+        zIndex: 3,
+      }}
+    />
+  );
+}
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0 },
+function Redacted({ width }: { width: number }) {
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        background: "#1a1a1a",
+        borderRadius: 2,
+        height: 10,
+        width,
+      }}
+    />
+  );
+}
+
+const cardBase: React.CSSProperties = {
+  position: "relative",
+  background: "#0f0f0f",
+  border: "1px solid #1e1e1e",
+  overflow: "hidden",
+  ...FONT,
 };
 
 export default function HomePage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const t = useTranslations();
-  const heroT = useTranslations("hero");
-  const howT = useTranslations("howItWorks");
-  const featT = useTranslations("features");
-  const demoT = useTranslations("demo");
-  const ctaT = useTranslations("cta");
-  const extT = useTranslations("extension");
-  const supportT = useTranslations("support");
 
-  const [extEmail, setExtEmail] = useState("");
-  const [extStatus, setExtStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [mainVisible, setMainVisible] = useState(false);
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [hovered, setHovered] = useState<string | null>(null);
 
-  const handleExtWaitlist = async (e: React.FormEvent) => {
+  const handleEnter = useCallback(() => setMainVisible(true), []);
+
+  const handleAnalyse = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!extEmail.trim()) return;
-    setExtStatus("loading");
-    try {
-      const res = await fetch("/api/waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: extEmail }),
-      });
-      if (res.ok) {
-        setExtStatus("success");
-        setExtEmail("");
-      } else {
-        setExtStatus("error");
-      }
-    } catch {
-      setExtStatus("error");
-    }
+    if (!url.trim()) return;
+    setLoading(true);
+    setError("");
+    router.push(`/analysis/new?url=${encodeURIComponent(url.trim())}`);
   };
 
-  const STEPS_I18N = [
-    { icon: LinkIcon, title: howT("step1Title"), description: howT("step1Desc") },
-    { icon: Brain, title: howT("step2Title"), description: howT("step2Desc") },
-    { icon: FileCheck, title: howT("step3Title"), description: howT("step3Desc") },
-  ];
+  const tier = (session?.user as { tier?: string } | undefined)?.tier ?? "free";
+  const tierLabel =
+    tier === "veractor" ? "Veractor" : tier === "analyst" ? "Analyst" : "Observer";
 
-  const FEATURES_I18N = [
-    { icon: Zap, title: featT("instantSummary"), description: featT("instantSummaryDesc") },
-    { icon: Search, title: featT("claimExtraction"), description: featT("claimExtractionDesc") },
-    { icon: Shield, title: featT("factCheck"), description: featT("factCheckDesc") },
-    { icon: BarChart3, title: featT("timeline"), description: featT("timelineDesc") },
-  ];
-
-  const handleAnalyse = (url: string) => {
-    const encoded = encodeURIComponent(url);
-    router.push(`/analysis/new?url=${encoded}`);
-  };
+  const cardBorder = (key: string) =>
+    hovered === key ? `1px solid ${ACCENT}` : "1px solid #1e1e1e";
 
   return (
     <>
-      {/* ═══════════════ HERO ═══════════════ */}
-      <section id="hero" className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 overflow-hidden">
-        {/* Decorative glow blob */}
-        <motion.div
-          animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.05, 1] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-b from-amber-600/20 to-transparent rounded-full blur-3xl pointer-events-none"
-          aria-hidden="true"
-        />
+      <SplashScreen onEnter={handleEnter} />
 
-        <div className="page-container relative z-10 text-center">
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeInUp}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-gray-100 mb-6">
-              {heroT("title1")}
-              <br />
-              <span className="gradient-text"> {heroT("title2")}</span>
-            </h1>
-          </motion.div>
-
-          <motion.p
-            initial="hidden"
-            animate="visible"
-            variants={fadeInUp}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            className="max-w-2xl mx-auto text-lg sm:text-xl text-gray-400 leading-relaxed mb-10"
-          >
-            {heroT("subtitle")}
-          </motion.p>
-
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeInUp}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="mb-8"
-          >
-            <VideoInput onSubmit={handleAnalyse} />
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeInUp}
-            transition={{ duration: 0.6, delay: 0.45 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <a
-              href="#demo"
-              className="border-2 border-gray-700 hover:border-amber-400 text-gray-300 hover:text-white rounded-xl px-8 py-3.5 font-medium transition-all text-sm"
-            >
-              {heroT("seeExample")}
-            </a>
-          </motion.div>
-
-          <motion.p
-            initial="hidden"
-            animate="visible"
-            variants={fadeInUp}
-            transition={{ duration: 0.6, delay: 0.55 }}
-            className="mt-8 text-sm text-gray-600"
-          >
-            {heroT("trusted")}
-          </motion.p>
-        </div>
-      </section>
-
-      {/* ═══════════════ HOW IT WORKS ═══════════════ */}
-      <section id="how-it-works" className="section-spacing relative">
-        <div className="page-container">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            variants={fadeInUp}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-16"
-          >
-            <span className="text-label mb-3 inline-block">{howT("label")}</span>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-100">
-              {howT("title", { highlight: "" })}<span className="gradient-text"> {howT("highlight")}</span>
-            </h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            {STEPS_I18N.map((step, index) => {
-              const Icon = step.icon;
-              return (
-                <motion.div
-                  key={step.title}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, margin: "-40px" }}
-                  variants={fadeInUp}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="bg-gray-900 border-2 border-gray-800 rounded-2xl p-8 hover:border-amber-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10 group"
-                >
-                  {/* Numbered circle with amber gradient */}
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 flex items-center justify-center mb-6 group-hover:from-amber-500/30 group-hover:to-orange-500/20 transition-all">
-                    <Icon size={24} className="text-amber-400" />
-                  </div>
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-xs font-mono text-amber-500/60">0{index + 1}</span>
-                    <h3 className="text-lg font-bold text-gray-100">{step.title}</h3>
-                  </div>
-                  <p className="text-gray-400 leading-relaxed text-sm">{step.description}</p>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════ FEATURES ═══════════════ */}
-      <section className="section-spacing relative">
-        <div className="page-container">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            variants={fadeInUp}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-16"
-          >
-            <span className="text-label mb-3 inline-block">{featT("label")}</span>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-100">
-              {featT("title", { highlight: "" })}{" "}
-              <span className="gradient-text">{ featT("highlight")}</span>
-            </h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-            {FEATURES_I18N.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <motion.div
-                  key={feature.title}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, margin: "-40px" }}
-                  variants={fadeInUp}
-                  transition={{ duration: 0.5, delay: index * 0.08 }}
-                  className="bg-gray-900 border-2 border-gray-800 rounded-2xl p-8 hover:border-amber-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10 group"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 flex items-center justify-center mb-5 group-hover:from-amber-500/30 group-hover:to-orange-500/20 transition-all">
-                    <Icon size={22} className="text-amber-400" />
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-100 mb-2">{feature.title}</h3>
-                  <p className="text-gray-400 leading-relaxed text-sm">{feature.description}</p>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════ DEMO PREVIEW ═══════════════ */}
-      <section id="demo" className="section-spacing relative">
-        {/* Decorative glow */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: mainVisible ? 1 : 0 }}
+        transition={{ duration: 1, delay: 0.3 }}
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "#0a0a0a",
+          pointerEvents: mainVisible ? "all" : "none",
+          ...FONT,
+        }}
+      >
+        {/* Global scanline */}
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-gradient-to-b from-amber-600/8 to-transparent rounded-full blur-3xl pointer-events-none"
           aria-hidden="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,0.012) 3px,rgba(255,255,255,0.012) 4px)",
+            pointerEvents: "none",
+            zIndex: 50,
+          }}
         />
 
-        <div className="page-container relative z-10">
+        {/* NAVBAR */}
+        <nav
+          style={{
+            position: "absolute",
+            top: 0, left: 0, right: 0,
+            height: 52,
+            borderBottom: "1px solid #1a1a1a",
+            display: "flex",
+            alignItems: "center",
+            padding: "0 28px",
+            gap: 32,
+            zIndex: 10,
+            background: "#0a0a0a",
+            ...FONT,
+          }}
+        >
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+            <span style={{ width: 8, height: 8, background: ACCENT, borderRadius: "50%", display: "inline-block", flexShrink: 0 }} />
+            <span style={{ fontSize: 16, fontWeight: 700, color: "#fff", letterSpacing: "-0.5px" }}>VERACTUM</span>
+          </Link>
+
+          <div style={{ display: "flex", gap: 24, marginLeft: "auto" }}>
+            {([
+              { label: t("nav.howItWorks"), href: "/#how-it-works" },
+              { label: t("nav.pricing"), href: "/pricing" },
+              { label: t("nav.history"), href: "/history" },
+            ] as { label: string; href: string }[]).map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                style={{ fontSize: 12, color: "#555", letterSpacing: "1px", textTransform: "uppercase", textDecoration: "none", transition: "color 0.2s" }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = ACCENT)}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "#555")}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+
+          {session?.user ? (
+            <span style={{ fontSize: 11, letterSpacing: 2, color: ACCENT, border: "1px solid #3a2800", background: "#1a0e00", padding: "3px 10px", textTransform: "uppercase" }}>
+              {tierLabel}
+            </span>
+          ) : (
+            <Link
+              href="/?login=true"
+              style={{ fontSize: 11, letterSpacing: 2, color: ACCENT, border: "1px solid #3a2800", background: "#1a0e00", padding: "3px 10px", textTransform: "uppercase", textDecoration: "none" }}
+            >
+              Sign In
+            </Link>
+          )}
+        </nav>
+
+        {/* BOARD GRID */}
+        <div
+          className="dossier-board"
+          style={{
+            position: "absolute",
+            top: 52, left: 0, right: 0, bottom: 0,
+            padding: "24px 20px",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gridTemplateRows: "1fr 1fr",
+            gap: 14,
+          }}
+        >
+          {/* CARD 1 - Analyse (left, full height) */}
           <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            variants={fadeInUp}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-12"
+            onHoverStart={() => setHovered("analyse")}
+            onHoverEnd={() => setHovered(null)}
+            whileHover={{ y: -2 }}
+            style={{ ...cardBase, gridColumn: 1, gridRow: "1 / 3", border: cardBorder("analyse"), padding: 28, cursor: "default", transition: "border-color 0.3s" }}
           >
-            <span className="text-label mb-3 inline-block">{demoT("label")}</span>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-100">
-              {demoT("title", { highlight: "" })}<span className="gradient-text"> {demoT("highlight")}</span>
+            <ScanLine active={hovered === "analyse"} />
+            <Corners />
+            <Pin />
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(232,160,32,0) 0%,rgba(232,160,32,0.04) 100%)", opacity: hovered === "analyse" ? 1 : 0, transition: "opacity 0.3s", pointerEvents: "none" }} />
+
+            <p style={{ fontSize: 9, letterSpacing: 3, color: ACCENT, textTransform: "uppercase", marginBottom: 16, opacity: 0.7 }}>
+              — Case File 001 — Analyse
+            </p>
+            <h2 style={{ fontSize: 26, fontWeight: 700, color: "#fff", lineHeight: 1.2, marginBottom: 10, letterSpacing: "-0.5px" }}>
+              Analyse any<br />YouTube video.
             </h2>
+            <p style={{ fontSize: 13, color: "#555", lineHeight: 1.6, marginBottom: 24 }}>
+              Paste a link. Extract the transcript, verify every claim, expose the truth with sources.
+            </p>
+
+            <form onSubmit={handleAnalyse} style={{ display: "flex", gap: 8 }}>
+              <input
+                type="text"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="Paste a YouTube link..."
+                style={{ flex: 1, background: "#0a0a0a", border: "1px solid #2a2a2a", color: "#888", fontFamily: "inherit", fontSize: 12, padding: "8px 12px", outline: "none" }}
+                onFocus={(e) => { e.target.style.borderColor = ACCENT; e.target.style.color = "#fff"; }}
+                onBlur={(e) => { e.target.style.borderColor = "#2a2a2a"; e.target.style.color = "#888"; }}
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                style={{ background: ACCENT, border: "none", color: "#000", fontFamily: "inherit", fontSize: 11, fontWeight: 700, letterSpacing: 2, padding: "8px 16px", cursor: loading ? "wait" : "pointer", textTransform: "uppercase", opacity: loading ? 0.7 : 1 }}
+              >
+                {loading ? "..." : t("hero.analyseButton")}
+              </button>
+            </form>
+
+            {error && <p style={{ fontSize: 11, color: "#ef4444", marginTop: 8 }}>{error}</p>}
+
+            <p style={{ marginTop: 10, fontSize: 10, color: "#333", letterSpacing: 1 }}>
+              {t("hero.trusted").toUpperCase()}
+            </p>
+
+            <div style={{ position: "absolute", bottom: 16, right: 16, border: "2px solid rgba(232,160,32,0.3)", color: "rgba(232,160,32,0.25)", fontSize: 11, letterSpacing: 3, padding: "4px 10px", textTransform: "uppercase", transform: "rotate(-8deg)", fontWeight: 700, userSelect: "none" }}>
+              Classified
+            </div>
           </motion.div>
 
+          {/* CARD 2 - How it Works (top right) */}
           <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-40px" }}
-            variants={fadeInUp}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="relative rounded-3xl border border-amber-500/20 bg-gray-900/50 backdrop-blur-sm p-6 sm:p-8 lg:p-10 overflow-hidden"
+            onHoverStart={() => setHovered("how")}
+            onHoverEnd={() => setHovered(null)}
+            whileHover={{ y: -2 }}
+            style={{ ...cardBase, gridColumn: 2, gridRow: 1, border: cardBorder("how"), padding: 24, cursor: "pointer", transition: "border-color 0.3s" }}
+            onClick={() => router.push("/pricing")}
           >
-            {/* Example label */}
-            <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
-              <span className="px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-medium text-amber-400">
-                {demoT("exampleAnalysis")}
-              </span>
+            <ScanLine active={hovered === "how"} />
+            <Corners />
+            <Pin />
+
+            <p style={{ fontSize: 9, letterSpacing: 3, color: ACCENT, textTransform: "uppercase", marginBottom: 14, opacity: 0.7 }}>
+              — Procedure — {t("nav.howItWorks")}
+            </p>
+            <h2 style={{ fontSize: 22, fontWeight: 700, color: "#fff", lineHeight: 1.2, marginBottom: 16, letterSpacing: "-0.5px" }}>
+              {t("howItWorks.title")}<br />
+              <span style={{ color: ACCENT }}>{t("howItWorks.highlight")}.</span>
+            </h2>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {[
+                { n: "01", label: t("howItWorks.step1Title") },
+                { n: "02", label: t("howItWorks.step2Title") },
+                { n: "03", label: t("howItWorks.step3Title") },
+              ].map(({ n, label }) => (
+                <div key={n} style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <span style={{ fontSize: 10, color: ACCENT, letterSpacing: 2, flexShrink: 0 }}>{n}</span>
+                  <span style={{ fontSize: 12, color: "#444" }}>{label}</span>
+                </div>
+              ))}
             </div>
 
-            {/* ── Video card ── */}
-            <div className="flex flex-col sm:flex-row gap-5 mb-8 pb-8 border-b border-gray-800/50">
-              {/* Thumbnail */}
-              <div className="relative w-full sm:w-72 aspect-video rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden shrink-0">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                    <Play size={24} className="text-white ml-1" />
-                  </div>
-                </div>
-                {/* Duration badge */}
-                <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-mono px-2 py-0.5 rounded">
-                  18:42
-                </div>
-              </div>
-
-              {/* Video info */}
-              <div className="flex flex-col justify-center">
-                <h3 className="text-lg font-bold text-gray-100 mb-1.5 leading-tight">
-                  Climate Science 2024: What the Latest Data Really Shows
-                </h3>
-                <div className="flex items-center gap-3 text-sm text-gray-500">
-                  <div className="flex items-center gap-1.5">
-                    <User size={14} />
-                    <span>Science Explained</span>
-                  </div>
-                  <span>•</span>
-                  <div className="flex items-center gap-1.5">
-                    <Clock size={14} />
-                    <span>18:42</span>
-                  </div>
-                  <span className="hidden sm:inline">•</span>
-                  <span className="hidden sm:inline">1.2M views</span>
-                </div>
-              </div>
+            <div style={{ marginTop: 20, fontSize: 11, letterSpacing: 2, color: ACCENT, textTransform: "uppercase" }}>
+              View procedure →
             </div>
+          </motion.div>
 
-            {/* ── Summary block ── */}
-            <div className="mb-8 pb-8 border-b border-gray-800/50">
-              <h4 className="text-sm font-semibold text-amber-400 uppercase tracking-wider mb-4">
-                {demoT("summary")}
-              </h4>
-              <ul className="space-y-2.5">
-                {DEMO_SUMMARY_POINTS.map((point, idx) => (
-                  <li key={idx} className="flex gap-3 items-start">
-                    <span className="mt-2 w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                    <span className="text-gray-300 text-sm leading-relaxed">{point}</span>
-                  </li>
+          {/* Bottom right - Pricing + History */}
+          <div style={{ gridColumn: 2, gridRow: 2, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+
+            {/* Pricing */}
+            <motion.div
+              onHoverStart={() => setHovered("pricing")}
+              onHoverEnd={() => setHovered(null)}
+              whileHover={{ y: -2 }}
+              style={{ ...cardBase, border: cardBorder("pricing"), padding: 20, cursor: "pointer", transition: "border-color 0.3s" }}
+              onClick={() => router.push("/pricing")}
+            >
+              <ScanLine active={hovered === "pricing"} />
+              <Corners />
+              <Pin />
+              <p style={{ fontSize: 9, letterSpacing: 3, color: ACCENT, textTransform: "uppercase", marginBottom: 12, opacity: 0.7 }}>— Clearance Levels</p>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 14, letterSpacing: "-0.5px" }}>
+                Choose your<br />clearance.
+              </h3>
+              <div style={{ display: "flex", gap: 6 }}>
+                {[
+                  { name: "Observer", price: "€0", active: false },
+                  { name: "Analyst", price: "€9", active: true },
+                  { name: "Veractor", price: "€29", active: false },
+                ].map(({ name, price, active }) => (
+                  <div key={name} style={{ flex: 1, border: active ? `1px solid ${ACCENT}` : "1px solid #1e1e1e", background: active ? "#0d0800" : "transparent", padding: "8px 6px", textAlign: "center" }}>
+                    <div style={{ fontSize: 8, color: active ? ACCENT : "#555", letterSpacing: 2, textTransform: "uppercase", marginBottom: 3 }}>{name}</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: active ? ACCENT : "#fff" }}>{price}</div>
+                  </div>
                 ))}
-              </ul>
-            </div>
-
-            {/* ── Claim cards ── */}
-            <div>
-              <h4 className="text-sm font-semibold text-amber-400 uppercase tracking-wider mb-5">
-                {demoT("extractedClaims")}
-              </h4>
-              <div className="space-y-4">
-                {DEMO_CLAIMS.map((claim, idx) => {
-                  const config = STATUS_CONFIG[claim.status];
-                  const StatusIcon = config.icon;
-
-                  return (
-                    <div
-                      key={idx}
-                      className="bg-gray-900/80 border border-gray-800 rounded-xl p-5 hover:border-amber-500/20 transition-all"
-                    >
-                      {/* Status badge + claim text */}
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <p className="text-gray-200 text-sm leading-relaxed flex-1">
-                          &ldquo;{claim.text}&rdquo;
-                        </p>
-                        <span
-                          className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${config.bg} ${config.border} ${config.color}`}
-                        >
-                          <StatusIcon size={11} />
-                          {config.label}
-                        </span>
-                      </div>
-
-                      {/* Confidence bar */}
-                      {claim.confidence > 0 && (
-                        <div className="mb-3">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs text-gray-600">{demoT("confidence")}</span>
-                            <span className="text-xs font-mono text-gray-500">
-                              {claim.confidence}%
-                            </span>
-                          </div>
-                          <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              whileInView={{ width: `${claim.confidence}%` }}
-                              viewport={{ once: true }}
-                              transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 + idx * 0.2 }}
-                              className={`h-full rounded-full ${config.barColor}`}
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Sources */}
-                      {claim.sources.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {claim.sources.map((source, sIdx) => (
-                            <span
-                              key={sIdx}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-gray-800/60 border border-gray-700/50 text-xs text-gray-500"
-                            >
-                              {source.title}
-                              <ExternalLink size={9} className="text-gray-600" />
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
               </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+              <div style={{ marginTop: 14, fontSize: 10, letterSpacing: 2, color: ACCENT, textTransform: "uppercase" }}>View all →</div>
+            </motion.div>
 
-      {/* ═══════════════ CHROME EXTENSION ═══════════════ */}
-      <section className="section-spacing relative">
-        <div className="page-container">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            variants={fadeInUp}
-            transition={{ duration: 0.5 }}
-            className="relative rounded-3xl border border-amber-500/20 bg-gray-900/50 backdrop-blur-sm p-8 sm:p-12 lg:p-16 text-center overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-amber-600/10 to-transparent rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
-
-            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto mb-6">
-              <Chrome size={32} className="text-amber-400" />
-            </div>
-
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-100 mb-4">
-              {extT("title")} <span className="gradient-text">{extT("highlight")}</span>
-            </h2>
-            <p className="max-w-xl mx-auto text-gray-400 leading-relaxed mb-8">
-              {extT("description")}
-            </p>
-
-            {extStatus === "success" ? (
-              <div className="flex items-center justify-center gap-2 text-emerald-400 font-medium">
-                <Check size={20} />
-                {extT("success")}
+            {/* History */}
+            <motion.div
+              onHoverStart={() => setHovered("history")}
+              onHoverEnd={() => setHovered(null)}
+              whileHover={{ y: -2 }}
+              style={{ ...cardBase, border: cardBorder("history"), padding: 20, cursor: "pointer", transition: "border-color 0.3s" }}
+              onClick={() => router.push("/history")}
+            >
+              <ScanLine active={hovered === "history"} />
+              <Corners />
+              <Pin />
+              <p style={{ fontSize: 9, letterSpacing: 3, color: ACCENT, textTransform: "uppercase", marginBottom: 12, opacity: 0.7 }}>— Archive</p>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 14, letterSpacing: "-0.5px" }}>
+                Your case<br />files.
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {[
+                  { w: 120, time: "2h ago" },
+                  { w: 90, time: "1d ago" },
+                  { w: 105, time: "3d ago" },
+                ].map(({ w, time }, i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: i < 2 ? "1px solid #151515" : "none" }}>
+                    <Redacted width={w} />
+                    <span style={{ fontSize: 9, color: "#333" }}>{time}</span>
+                  </div>
+                ))}
               </div>
-            ) : (
-              <form onSubmit={handleExtWaitlist} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                <div className="relative flex-1">
-                  <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <input
-                    type="email"
-                    value={extEmail}
-                    onChange={(e) => setExtEmail(e.target.value)}
-                    placeholder={extT("emailPlaceholder")}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-800 border border-gray-700 text-gray-200 placeholder:text-gray-500 focus:outline-none focus:border-amber-500/50 text-sm"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={extStatus === "loading"}
-                  className="bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-6 py-3 text-sm transition-all hover:shadow-lg hover:shadow-amber-500/25 disabled:opacity-50 whitespace-nowrap"
-                >
-                  {extStatus === "loading" ? "..." : extT("notify")}
-                </button>
-              </form>
-            )}
-            {extStatus === "error" && (
-              <p className="text-red-400 text-sm mt-3">{extT("error")}</p>
-            )}
-          </motion.div>
+              <div style={{ marginTop: 12, fontSize: 10, letterSpacing: 2, color: ACCENT, textTransform: "uppercase" }}>Open archive →</div>
+            </motion.div>
+          </div>
         </div>
-      </section>
-
-      {/* ═══════════════ SUPPORT / DONATE ═══════════════ */}
-      <section id="support" className="section-spacing relative">
-        <div className="page-container">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            variants={fadeInUp}
-            transition={{ duration: 0.5 }}
-            className="relative rounded-3xl border border-amber-500/20 bg-gray-900/50 backdrop-blur-sm p-8 sm:p-12 text-center overflow-hidden"
-          >
-            <div className="absolute top-0 left-0 w-80 h-80 bg-gradient-to-br from-amber-600/8 to-transparent rounded-full blur-3xl pointer-events-none" />
-            <div className="text-4xl mb-4">☕</div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-100 mb-3">
-              {supportT("headingPrefix")} <span className="gradient-text">Veractum</span>
-            </h2>
-            <p className="max-w-lg mx-auto text-gray-400 leading-relaxed mb-8">
-              {supportT("description")}
-            </p>
-            <a
-              href="/donate"
-              className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-8 py-3.5 transition-all hover:shadow-lg hover:shadow-amber-500/30 text-sm"
-            >
-              {supportT("cta")} <ArrowRight size={16} />
-            </a>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ═══════════════ CTA ═══════════════ */}
-      <section className="section-spacing relative">
-        <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[400px] bg-gradient-to-b from-amber-600/10 to-transparent rounded-full blur-3xl pointer-events-none"
-          aria-hidden="true"
-        />
-
-        <div className="page-container relative z-10 text-center">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            variants={fadeInUp}
-            transition={{ duration: 0.5 }}
-          >
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-100 mb-6">
-              {ctaT("title")}{" "}
-              <span className="gradient-text">{ctaT("highlight")}</span>?
-            </h2>
-            <p className="max-w-xl mx-auto text-gray-400 leading-relaxed mb-10">
-              {ctaT("subtitle")}
-            </p>
-            <a
-              href="#hero"
-              className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl px-10 py-4 transition-all hover:shadow-lg hover:shadow-amber-500/50 text-base"
-            >
-              {ctaT("button")}
-              <ArrowRight size={18} />
-            </a>
-          </motion.div>
-        </div>
-      </section>
+      </motion.div>
     </>
   );
 }

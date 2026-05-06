@@ -14,9 +14,9 @@ const securityHeaders = [
     value: [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com",
-      "style-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline' https://api.fontshare.com",
       "img-src 'self' data: https://i.ytimg.com https://img.youtube.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com",
-      "font-src 'self'",
+      "font-src 'self' https://cdn.fontshare.com",
       "connect-src 'self' https://api.inngest.com https://inn.gs",
       "frame-ancestors 'none'",
     ].join("; "),

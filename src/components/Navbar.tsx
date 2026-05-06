@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
@@ -25,8 +26,11 @@ export function Navbar() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
+  const pathname = usePathname();
   const tier = (session?.user as { tier?: string } | undefined)?.tier ?? "free";
   const badge = TIER_BADGES[tier] ?? TIER_BADGES.free;
+
+  if (pathname === "/") return null;
 
   const navLinks = [
     { label: t("howItWorks"), href: "/#how-it-works" },
