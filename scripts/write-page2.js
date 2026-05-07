@@ -1,4 +1,7 @@
-"use client";
+const fs = require("fs");
+const path = require("path");
+
+const content = `"use client";
 
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -328,7 +331,7 @@ export default function HomePage() {
                 opacity: 0.7,
               }}
             >
-              — Case File {caseNumber} — Analyse
+              \u2014 Case File {caseNumber} \u2014 Analyse
             </p>
             <h2
               style={{
@@ -540,7 +543,7 @@ export default function HomePage() {
                   opacity: 0.7,
                 }}
               >
-                — Procedure — {t("nav.howItWorks")}
+                \u2014 Procedure \u2014 {t("nav.howItWorks")}
               </p>
               <h2
                 style={{
@@ -616,7 +619,7 @@ export default function HomePage() {
                   textTransform: "uppercase",
                 }}
               >
-                View procedure →
+                View procedure \u2192
               </div>
             </motion.div>
 
@@ -649,7 +652,7 @@ export default function HomePage() {
                   opacity: 0.7,
                 }}
               >
-                — Clearance Levels
+                \u2014 Clearance Levels
               </p>
               <h3
                 style={{
@@ -676,11 +679,11 @@ export default function HomePage() {
               </p>
               <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
                 {[
-                  { name: "Observer", price: "€0", tierKey: "free", desc: "1 / mo" },
-                  { name: "Analyst", price: "€9", tierKey: "analyst", desc: "20 / mo" },
+                  { name: "Observer", price: "\u20ac0", tierKey: "free", desc: "1 / mo" },
+                  { name: "Analyst", price: "\u20ac9", tierKey: "analyst", desc: "20 / mo" },
                   {
                     name: "Veractor",
-                    price: "€29",
+                    price: "\u20ac29",
                     tierKey: "veractor",
                     desc: "60 / mo",
                   },
@@ -738,7 +741,7 @@ export default function HomePage() {
                   textTransform: "uppercase",
                 }}
               >
-                View all plans →
+                View all plans \u2192
               </div>
             </motion.div>
 
@@ -771,7 +774,7 @@ export default function HomePage() {
                   opacity: 0.7,
                 }}
               >
-                — Support
+                \u2014 Support
               </p>
               <h3
                 style={{
@@ -805,7 +808,7 @@ export default function HomePage() {
                   margin: "14px 0",
                 }}
               >
-                {["€3", "€10", "€25"].map((amt) => (
+                {["\u20ac3", "\u20ac10", "\u20ac25"].map((amt) => (
                   <div
                     key={amt}
                     style={{
@@ -829,7 +832,7 @@ export default function HomePage() {
                   textTransform: "uppercase",
                 }}
               >
-                Donate now →
+                Donate now \u2192
               </div>
             </motion.div>
 
@@ -862,7 +865,7 @@ export default function HomePage() {
                   opacity: 0.7,
                 }}
               >
-                — Archive
+                \u2014 Archive
               </p>
               <h3
                 style={{
@@ -923,7 +926,7 @@ export default function HomePage() {
                   textTransform: "uppercase",
                 }}
               >
-                Open archive →
+                Open archive \u2192
               </div>
             </motion.div>
           </div>
@@ -932,3 +935,7 @@ export default function HomePage() {
     </>
   );
 }
+`;
+
+fs.writeFileSync(path.join(__dirname, "../src/app/page.tsx"), content, "utf8");
+console.log("page.tsx written OK, lines:", content.split("\n").length);

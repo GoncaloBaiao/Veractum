@@ -30,14 +30,6 @@ export function Navbar() {
   const tier = (session?.user as { tier?: string } | undefined)?.tier ?? "free";
   const badge = TIER_BADGES[tier] ?? TIER_BADGES.free;
 
-  if (pathname === "/") return null;
-
-  const navLinks = [
-    { label: t("howItWorks"), href: "/#how-it-works" },
-    { label: t("pricing"), href: "/pricing" },
-    { label: t("history"), href: "/history" },
-  ];
-
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -55,6 +47,14 @@ export function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  if (pathname === "/") return null;
+
+  const navLinks = [
+    { label: t("howItWorks"), href: "/#how-it-works" },
+    { label: t("pricing"), href: "/pricing" },
+    { label: t("history"), href: "/history" },
+  ];
 
   return (
     <>
