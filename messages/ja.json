@@ -1,4 +1,4 @@
-﻿{
+{
   "nav": {
     "howItWorks": "使い方",
     "pricing": "料金",
@@ -23,7 +23,7 @@
   },
   "howItWorks": {
     "label": "使い方",
-    "title": "{highlight}への3ステップ",
+    "title": "3ステップで",
     "highlight": "明確さ",
     "step1Title": "YouTubeリンクを貼り付け",
     "step1Desc": "任意のYouTube URLをVeractumに入力。標準リンク、短縮リンク、埋め込みリンクに対応。",
@@ -254,5 +254,29 @@
     "headingPrefix": "支援",
     "description": "Veractum は独立して開発されています。あなたの支援はサーバー、API、将来のアップデートを賄うことになります。",
     "cta": "プロジェクトを支援する"
+  },
+  "home": {
+    "caseFile": "事件",
+    "analyseHeading": "あらゆる YouTube 動画を分析。",
+    "analyseSubtitle": "リンクを貼り付けてください。AI がトランスクリプトを抽出し、すべての主張を特定し、実際のソースで確認します。",
+    "classified": "機密",
+    "procedureLabel": "手順",
+    "viewProcedure": "手順を見る",
+    "clearanceLabel": "クリアランスレベル",
+    "clearanceTitle": "レベルを選択。",
+    "clearanceSubtitle": "無料で始める。分析数の増加、より長い動画、優先処理のためにアップグレード。",
+    "observerAnalyses": "1 回 / 月",
+    "analystAnalyses": "20 回 / 月",
+    "veractorAnalyses": "60 回 / 月",
+    "viewAllPlans": "すべてのプランを見る",
+    "supportLabel": "サポート",
+    "supportTitle": "ミッションを支援。",
+    "supportSubtitle": "Veractum は偽情報と戦います。独立した寄付者がプロジェクトを維持し、真実を誰もがアクセスできるようにします。",
+    "donateNow": "今すぐ寄付",
+    "archiveLabel": "アーカイブ",
+    "archiveTitle": "あなたの事件ファイル。",
+    "archiveSubtitle": "過去の調査を確認し、時間をかけてリサーチを追跡。",
+    "investigationsRecord": "{count} 件の調査が記録されています。",
+    "openArchive": "アーカイブを開く"
   }
 }

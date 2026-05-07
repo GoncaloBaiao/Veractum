@@ -1,4 +1,4 @@
-﻿{
+{
   "nav": {
     "howItWorks": "工作原理",
     "pricing": "定价",
@@ -254,5 +254,29 @@
     "headingPrefix": "支持",
     "description": "Veractum 是独立开发的。您的支持资助服务器、API 和未来更新。",
     "cta": "支持这个项目"
+  },
+  "home": {
+    "caseFile": "案件",
+    "analyseHeading": "分析任意 YouTube 视频。",
+    "analyseSubtitle": "粘贴链接。我们的 AI 提取文字记录，识别每个声明，并与真实来源进行核实。",
+    "classified": "机密",
+    "procedureLabel": "程序",
+    "viewProcedure": "查看程序",
+    "clearanceLabel": "权限级别",
+    "clearanceTitle": "选择您的权限。",
+    "clearanceSubtitle": "免费开始。升级以获得更多分析、更长的视频和优先处理。",
+    "observerAnalyses": "1 次 / 月",
+    "analystAnalyses": "20 次 / 月",
+    "veractorAnalyses": "60 次 / 月",
+    "viewAllPlans": "查看所有计划",
+    "supportLabel": "支持",
+    "supportTitle": "支持我们的使命。",
+    "supportSubtitle": "Veractum 打击虚假信息。独立捐助者让项目保持活力，让真相对每个人都可访问。",
+    "donateNow": "立即捐款",
+    "archiveLabel": "档案",
+    "archiveTitle": "您的案件文件。",
+    "archiveSubtitle": "回顾过去的调查，随时间追踪您的研究。",
+    "investigationsRecord": "共 {count} 项调查记录。",
+    "openArchive": "打开档案"
   }
 }

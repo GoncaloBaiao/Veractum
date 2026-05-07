@@ -1,4 +1,4 @@
-﻿{
+{
   "nav": {
     "howItWorks": "How it Works",
     "pricing": "Pricing",
@@ -254,5 +254,29 @@
     "headingPrefix": "Support",
     "description": "Veractum is independently developed. Your support funds the servers, APIs and future updates.",
     "cta": "Support the project"
+  },
+  "home": {
+    "caseFile": "Case File",
+    "analyseHeading": "Analyse any YouTube video.",
+    "analyseSubtitle": "Paste a link. Our AI extracts the transcript, identifies every claim, and cross-checks with real sources.",
+    "classified": "Classified",
+    "procedureLabel": "Procedure",
+    "viewProcedure": "View procedure",
+    "clearanceLabel": "Clearance Levels",
+    "clearanceTitle": "Choose your clearance.",
+    "clearanceSubtitle": "Start free. Upgrade for more analyses, longer videos, and priority processing.",
+    "observerAnalyses": "1 / mo",
+    "analystAnalyses": "20 / mo",
+    "veractorAnalyses": "60 / mo",
+    "viewAllPlans": "View all plans",
+    "supportLabel": "Support",
+    "supportTitle": "Support the mission.",
+    "supportSubtitle": "Veractum fights misinformation. Independent donors keep the project alive and truth accessible to everyone.",
+    "donateNow": "Donate now",
+    "archiveLabel": "Archive",
+    "archiveTitle": "Your case files.",
+    "archiveSubtitle": "Review past investigations and track your research over time.",
+    "investigationsRecord": "{count} investigations on record.",
+    "openArchive": "Open archive"
   }
 }

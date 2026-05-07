@@ -132,7 +132,7 @@ export default function AnalysisPage() {
   const contestedCount = analysis.claims.filter((c) => c.status === "contested").length;
 
   return (
-    <div className="pt-24 pb-16">
+    <div className="pt-36 pb-16">
       <div className="page-container max-w-5xl">
         {/* Back link */}
         <Link

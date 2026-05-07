@@ -1,4 +1,4 @@
-﻿{
+{
   "nav": {
     "howItWorks": "Come Funziona",
     "pricing": "Prezzi",
@@ -254,5 +254,29 @@
     "headingPrefix": "Sostieni",
     "description": "Veractum e sviluppato in modo indipendente. Il tuo supporto finanzia i server, le API e i futuri aggiornamenti.",
     "cta": "Sostieni il progetto"
+  },
+  "home": {
+    "caseFile": "Caso",
+    "analyseHeading": "Analizza qualsiasi video YouTube.",
+    "analyseSubtitle": "Incolla un link. La nostra IA estrae la trascrizione, identifica ogni affermazione e verifica con fonti reali.",
+    "classified": "Classificato",
+    "procedureLabel": "Procedura",
+    "viewProcedure": "Visualizza procedura",
+    "clearanceLabel": "Livelli di Accesso",
+    "clearanceTitle": "Scegli il tuo livello.",
+    "clearanceSubtitle": "Inizia gratis. Passa a un piano superiore per più analisi, video più lunghi ed elaborazione prioritaria.",
+    "observerAnalyses": "1 / mese",
+    "analystAnalyses": "20 / mese",
+    "veractorAnalyses": "60 / mese",
+    "viewAllPlans": "Vedi tutti i piani",
+    "supportLabel": "Supporto",
+    "supportTitle": "Sostieni la missione.",
+    "supportSubtitle": "Veractum combatte la disinformazione. I donatori indipendenti mantengono il progetto vivo e la verità accessibile a tutti.",
+    "donateNow": "Dona ora",
+    "archiveLabel": "Archivio",
+    "archiveTitle": "I tuoi casi.",
+    "archiveSubtitle": "Rivedi le indagini passate e monitora la tua ricerca nel tempo.",
+    "investigationsRecord": "{count} indagine/i registrate.",
+    "openArchive": "Apri archivio"
   }
 }
