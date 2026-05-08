@@ -1,430 +1,21 @@
-"use client";
+const fs = require("fs");
+const path = require("path");
 
-import { useState, useCallback, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
-import Image from "next/image";
-import { SplashScreen } from "@/components/SplashScreen";
-import { LoginModal } from "@/components/LoginModal";
-import { LanguageSelector } from "@/components/LanguageSelector";
-import type { AnalysisListItem } from "@/types";
+// Read current file, find the board section start/end and replace it entirely
+const filePath = path.join(__dirname, "../src/app/page.tsx");
+const current = fs.readFileSync(filePath, "utf8");
 
-const FONT: React.CSSProperties = { fontFamily: "Satoshi, system-ui, sans-serif" };
-const ACCENT = "#E8A020";
+const boardStart = `        {/* BOARD: 1/4 left (Analyse) + 3/4 right (2x2 grid) */}`;
+const boardEnd = `          </div>
+        </div>
+      </motion.div>`;
 
-function Corners() {
-  const s: React.CSSProperties = {
-    position: "absolute",
-    width: 12,
-    height: 12,
-    borderColor: ACCENT,
-    borderStyle: "solid",
-    opacity: 0.4,
-  };
-  return (
-    <>
-      <span style={{ ...s, top: 8, left: 8, borderWidth: "1px 0 0 1px" }} />
-      <span style={{ ...s, top: 8, right: 8, borderWidth: "1px 1px 0 0" }} />
-      <span style={{ ...s, bottom: 8, left: 8, borderWidth: "0 0 1px 1px" }} />
-      <span style={{ ...s, bottom: 8, right: 8, borderWidth: "0 1px 1px 0" }} />
-    </>
-  );
-}
+const startIdx = current.indexOf(boardStart);
+const endIdx = current.indexOf(boardEnd, startIdx) + boardEnd.length;
 
-function Pin() {
-  return (
-    <span
-      style={{
-        position: "absolute",
-        width: 10,
-        height: 10,
-        borderRadius: "50%",
-        background: ACCENT,
-        top: -5,
-        left: "50%",
-        transform: "translateX(-50%)",
-        boxShadow: "0 0 8px rgba(232,160,32,0.5)",
-        zIndex: 2,
-      }}
-    />
-  );
-}
+if (startIdx === -1) { console.error("Board start not found"); process.exit(1); }
 
-function ScanLine({ active }: { active: boolean }) {
-  return (
-    <motion.div
-      initial={{ top: 0, opacity: 0 }}
-      animate={active ? { top: "100%", opacity: [1, 1, 0] } : { top: 0, opacity: 0 }}
-      transition={{ duration: 0.8, ease: "easeIn" }}
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        height: 2,
-        background: "linear-gradient(90deg,transparent,rgba(232,160,32,0.6),transparent)",
-        pointerEvents: "none",
-        zIndex: 3,
-      }}
-    />
-  );
-}
-
-function Redacted({ width }: { width: number }) {
-  return (
-    <span
-      style={{
-        display: "inline-block",
-        background: "#1e1e1e",
-        borderRadius: 2,
-        height: 10,
-        width,
-      }}
-    />
-  );
-}
-
-const cardBase: React.CSSProperties = {
-  position: "relative",
-  background: "#0f0f0f",
-  border: "1px solid #1e1e1e",
-  overflow: "hidden",
-  ...FONT,
-};
-
-export default function HomePage() {
-  const router = useRouter();
-  const { data: session } = useSession();
-  const t = useTranslations();
-
-  const [mainVisible, setMainVisible] = useState(false);
-  const [url, setUrl] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [hovered, setHovered] = useState<string | null>(null);
-  const [showLogin, setShowLogin] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [analyses, setAnalyses] = useState<AnalysisListItem[]>([]);
-  const userMenuRef = useRef<HTMLDivElement>(null);
-
-  const handleEnter = useCallback(() => setMainVisible(true), []);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setShowUserMenu(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    if (!session?.user) return;
-    fetch("/api/analyze?history=true")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data?.success && Array.isArray(data?.data)) {
-          setAnalyses(data.data as AnalysisListItem[]);
-        }
-      })
-      .catch(() => {});
-  }, [!!session?.user]);
-
-  const handleAnalyse = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!url.trim()) return;
-    setLoading(true);
-    router.push("/analysis/new?url=" + encodeURIComponent(url.trim()));
-  };
-
-  const tier = (session?.user as { tier?: string } | undefined)?.tier ?? "free";
-  const tierLabel =
-    tier === "veractor" ? "Veractor" : tier === "analyst" ? "Analyst" : "Observer";
-  const caseNumber = String(analyses.length + 1).padStart(3, "0");
-  const cardBorder = (key: string) =>
-    hovered === key ? "1px solid " + ACCENT : "1px solid #1e1e1e";
-
-  const navLinks = [
-    { label: t("nav.howItWorks"), href: "/docs" },
-    { label: t("nav.pricing"), href: "/pricing" },
-    { label: t("nav.history"), href: "/history" },
-  ];
-
-  const archiveRows: { label: string; time: string }[] =
-    analyses.length > 0
-      ? analyses.slice(0, 4).map((a) => ({
-          label: a.videoTitle,
-          time: (() => {
-            const diff = Date.now() - new Date(a.createdAt).getTime();
-            const h = Math.floor(diff / 3600000);
-            const d = Math.floor(diff / 86400000);
-            if (h < 1) return "just now";
-            if (h < 24) return h + "h ago";
-            return d + "d ago";
-          })(),
-        }))
-      : [
-          { label: "", time: "2h ago" },
-          { label: "", time: "1d ago" },
-          { label: "", time: "3d ago" },
-          { label: "", time: "5d ago" },
-        ];
-
-  return (
-    <>
-      <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
-      <SplashScreen onEnter={handleEnter} />
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: mainVisible ? 1 : 0 }}
-        transition={{ duration: 1, delay: 0.3 }}
-        style={{
-          position: "fixed",
-          inset: 0,
-          background: "#0a0a0a",
-          pointerEvents: mainVisible ? "all" : "none",
-          ...FONT,
-        }}
-      >
-        {/* Scanline overlay */}
-        <div
-          aria-hidden="true"
-          style={{
-            position: "fixed",
-            inset: 0,
-            background:
-              "repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,0.012) 3px,rgba(255,255,255,0.012) 4px)",
-            pointerEvents: "none",
-            zIndex: 50,
-          }}
-        />
-
-        {/* DOSSIER NAVBAR */}
-        <nav
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 52,
-            borderBottom: "1px solid #1a1a1a",
-            display: "flex",
-            alignItems: "center",
-            padding: "0 28px",
-            gap: 24,
-            zIndex: 10,
-            background: "#0a0a0a",
-            ...FONT,
-          }}
-        >
-          <Link
-            href="/"
-            style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}
-          >
-            <Image
-              src="/WizeApple.png"
-              alt="Veractum logo"
-              width={40}
-              height={40}
-              style={{ objectFit: "contain" }}
-            />
-            <span
-              style={{ fontSize: 16, fontWeight: 700, color: "#fff", letterSpacing: "-0.5px" }}
-            >
-              VERACTUM
-            </span>
-          </Link>
-
-          <div style={{ display: "flex", gap: 22, marginLeft: "auto" }}>
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                style={{
-                  fontSize: 11,
-                  color: "#555",
-                  letterSpacing: "1.5px",
-                  textTransform: "uppercase",
-                  textDecoration: "none",
-                  transition: "color 0.2s",
-                }}
-                onMouseEnter={(e) =>
-                  ((e.currentTarget as HTMLElement).style.color = ACCENT)
-                }
-                onMouseLeave={(e) =>
-                  ((e.currentTarget as HTMLElement).style.color = "#555")
-                }
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <LanguageSelector />
-          </div>
-
-          {session?.user ? (
-            <div ref={userMenuRef} style={{ position: "relative" }}>
-              <button
-                onClick={() => setShowUserMenu((v) => !v)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: "4px 0",
-                  fontFamily: "inherit",
-                }}
-              >
-                {session.user.image ? (
-                  <Image
-                    src={session.user.image}
-                    alt="Profile"
-                    width={28}
-                    height={28}
-                    style={{ borderRadius: "50%", border: "1px solid #333" }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: "50%",
-                      background: "#1a0e00",
-                      border: "1px solid #3a2800",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 12,
-                      color: ACCENT,
-                    }}
-                  >
-                    {(session.user.name ?? "?")[0].toUpperCase()}
-                  </div>
-                )}
-                <span
-                  style={{
-                    fontSize: 11,
-                    letterSpacing: 2,
-                    color: ACCENT,
-                    border: "1px solid #3a2800",
-                    background: "#1a0e00",
-                    padding: "3px 10px",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {tierLabel}
-                </span>
-              </button>
-
-              <AnimatePresence>
-                {showUserMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.15 }}
-                    style={{
-                      position: "absolute",
-                      right: 0,
-                      top: "calc(100% + 8px)",
-                      width: 220,
-                      background: "#111",
-                      border: "1px solid #222",
-                      boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
-                      zIndex: 100,
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{ padding: "12px 16px", borderBottom: "1px solid #1e1e1e" }}
-                    >
-                      <div
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: "#ddd",
-                          marginBottom: 2,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {session.user.name}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 11,
-                          color: "#444",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {session.user.email}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setShowUserMenu(false);
-                        void signOut({ callbackUrl: "/" });
-                      }}
-                      style={{
-                        width: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        padding: "10px 16px",
-                        background: "none",
-                        border: "none",
-                        color: "#555",
-                        fontSize: 12,
-                        letterSpacing: 1,
-                        textTransform: "uppercase",
-                        cursor: "pointer",
-                        fontFamily: "inherit",
-                        transition: "color 0.2s",
-                      }}
-                      onMouseEnter={(e) =>
-                        ((e.currentTarget as HTMLElement).style.color = "#fff")
-                      }
-                      onMouseLeave={(e) =>
-                        ((e.currentTarget as HTMLElement).style.color = "#555")
-                      }
-                    >
-                      {t("nav.signOut")}
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowLogin(true)}
-              style={{
-                fontSize: 11,
-                letterSpacing: 2,
-                color: ACCENT,
-                border: "1px solid #3a2800",
-                background: "#1a0e00",
-                padding: "4px 14px",
-                textTransform: "uppercase",
-                cursor: "pointer",
-                fontFamily: "inherit",
-              }}
-            >
-              {t("nav.signIn")}
-            </button>
-          )}
-        </nav>
-
-        {/* BOARD: How it Works (left) | Analyse (center) | 3 cards (right) */}
+const newBoard = `        {/* BOARD: How it Works (left) | Analyse (center) | 3 cards (right) */}
         <div
           className="dossier-board"
           style={{
@@ -439,7 +30,7 @@ export default function HomePage() {
             gap: 14,
           }}
         >
-          {/* ── COL 1: How it Works (left) ── */}
+          {/* \u2500\u2500 COL 1: How it Works (left) \u2500\u2500 */}
           <motion.div
             onHoverStart={() => setHovered("how")}
             onHoverEnd={() => setHovered(null)}
@@ -468,7 +59,7 @@ export default function HomePage() {
                 opacity: 0.7,
               }}
             >
-              — {t("home.procedureLabel")} — {t("nav.howItWorks")}
+              \u2014 {t("home.procedureLabel")} \u2014 {t("nav.howItWorks")}
             </p>
             <h2
               style={{
@@ -521,11 +112,11 @@ export default function HomePage() {
                 textTransform: "uppercase",
               }}
             >
-              {t("home.viewProcedure")} →
+              {t("home.viewProcedure")} \u2192
             </div>
           </motion.div>
 
-          {/* ── COL 2: Analyse (center, full height) ── */}
+          {/* \u2500\u2500 COL 2: Analyse (center, full height) \u2500\u2500 */}
           <motion.div
             onHoverStart={() => setHovered("analyse")}
             onHoverEnd={() => setHovered(null)}
@@ -564,7 +155,7 @@ export default function HomePage() {
                 opacity: 0.7,
               }}
             >
-              — {t("home.caseFile")} {caseNumber} — Analyse
+              \u2014 {t("home.caseFile")} {caseNumber} \u2014 Analyse
             </p>
             <h2
               style={{
@@ -711,7 +302,7 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-          {/* ── COL 3: Clearance + Donate + Archive (right, stacked) ── */}
+          {/* \u2500\u2500 COL 3: Clearance + Donate + Archive (right, stacked) \u2500\u2500 */}
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {/* Clearance Levels */}
             <motion.div
@@ -743,7 +334,7 @@ export default function HomePage() {
                   opacity: 0.7,
                 }}
               >
-                — {t("home.clearanceLabel")}
+                \u2014 {t("home.clearanceLabel")}
               </p>
               <h3
                 style={{
@@ -816,7 +407,7 @@ export default function HomePage() {
               <div
                 style={{ fontSize: 10, letterSpacing: 2, color: ACCENT, textTransform: "uppercase" }}
               >
-                {t("home.viewAllPlans")} →
+                {t("home.viewAllPlans")} \u2192
               </div>
             </motion.div>
 
@@ -850,7 +441,7 @@ export default function HomePage() {
                   opacity: 0.7,
                 }}
               >
-                — {t("home.supportLabel")}
+                \u2014 {t("home.supportLabel")}
               </p>
               <h3
                 style={{
@@ -874,7 +465,7 @@ export default function HomePage() {
                   margin: "14px 0",
                 }}
               >
-                {["€3", "€10", "€25"].map((amt) => (
+                {["\u20ac3", "\u20ac10", "\u20ac25"].map((amt) => (
                   <div
                     key={amt}
                     style={{
@@ -893,7 +484,7 @@ export default function HomePage() {
               <div
                 style={{ fontSize: 10, letterSpacing: 2, color: ACCENT, textTransform: "uppercase" }}
               >
-                {t("home.donateNow")} →
+                {t("home.donateNow")} \u2192
               </div>
             </motion.div>
 
@@ -927,7 +518,7 @@ export default function HomePage() {
                   opacity: 0.7,
                 }}
               >
-                — {t("home.archiveLabel")}
+                \u2014 {t("home.archiveLabel")}
               </p>
               <h3
                 style={{
@@ -983,12 +574,13 @@ export default function HomePage() {
               <div
                 style={{ marginTop: 12, fontSize: 10, letterSpacing: 2, color: ACCENT, textTransform: "uppercase" }}
               >
-                {t("home.openArchive")} →
+                {t("home.openArchive")} \u2192
               </div>
             </motion.div>
           </div>
         </div>
-      </motion.div>
-    </>
-  );
-}
+      </motion.div>`;
+
+const newContent = current.slice(0, startIdx) + newBoard + current.slice(endIdx);
+fs.writeFileSync(filePath, newContent, "utf8");
+console.log("page.tsx board section replaced successfully");

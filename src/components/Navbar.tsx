@@ -51,7 +51,7 @@ export function Navbar() {
   if (pathname === "/") return null;
 
   const navLinks = [
-    { label: t("howItWorks"), href: "/#how-it-works" },
+    { label: t("howItWorks"), href: "/docs" },
     { label: t("pricing"), href: "/pricing" },
     { label: t("history"), href: "/history" },
   ];
