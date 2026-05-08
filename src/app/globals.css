@@ -59,15 +59,62 @@ body {
   scrollbar-color: #374151 #0a0a0f;
 }
 
-/* ─── Dossier Homepage (mobile) ─── */
-@media (max-width: 768px) {
+/* ─── Dossier Homepage — Responsive ─── */
+
+/* Mobile: single column, scrollable */
+@media (max-width: 767px) {
+  .dossier-root {
+    position: fixed !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  .dossier-nav-links,
+  .dossier-lang {
+    display: none !important;
+  }
+
   .dossier-board {
     position: relative !important;
     height: auto !important;
-    overflow-y: auto !important;
     grid-template-columns: 1fr !important;
-    grid-template-rows: auto !important;
-    padding-bottom: 40px !important;
+    padding: 16px 12px 40px !important;
+    gap: 12px !important;
+    overflow: visible !important;
+  }
+
+  /* Remove flex: 1 so cards don't stretch weirdly in single col */
+  .dossier-col {
+    flex-direction: column !important;
+  }
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .dossier-root {
+    position: fixed !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  .dossier-board {
+    position: relative !important;
+    height: auto !important;
+    grid-template-columns: 1fr 1fr !important;
+    padding: 20px 16px 40px !important;
+    gap: 12px !important;
+    overflow: visible !important;
+  }
+
+  /* Left col (How it Works + Donate) spans full width on tablet */
+  .dossier-col:first-of-type {
+    grid-column: 1 / -1 !important;
+    flex-direction: row !important;
+  }
+
+  .dossier-col:first-of-type > * {
+    flex: 1 !important;
+    min-width: 0 !important;
   }
 }
 

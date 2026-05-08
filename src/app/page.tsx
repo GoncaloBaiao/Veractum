@@ -181,6 +181,7 @@ export default function HomePage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: mainVisible ? 1 : 0 }}
         transition={{ duration: 1, delay: 0.3 }}
+        className="dossier-root"
         style={{
           position: "fixed",
           inset: 0,
@@ -238,7 +239,7 @@ export default function HomePage() {
             </span>
           </Link>
 
-          <div style={{ display: "flex", gap: 22, marginLeft: "auto" }}>
+          <div className="dossier-nav-links" style={{ display: "flex", gap: 22, marginLeft: "auto" }}>
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -263,8 +264,7 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <LanguageSelector />
+          <div className="dossier-lang" style={{ display: "flex", alignItems: "center" }}>
           </div>
 
           {session?.user ? (
@@ -440,7 +440,7 @@ export default function HomePage() {
           }}
         >
           {/* ── COL 1: How it Works + Donate (left, stacked) ── */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div className="dossier-col" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <motion.div
               onHoverStart={() => setHovered("how")}
               onHoverEnd={() => setHovered(null)}
@@ -792,7 +792,7 @@ export default function HomePage() {
           </motion.div>
 
           {/* ── COL 3: Clearance + Archive (right, stacked) ── */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div className="dossier-col" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {/* Clearance Levels */}
             <motion.div
               onHoverStart={() => setHovered("pricing")}
