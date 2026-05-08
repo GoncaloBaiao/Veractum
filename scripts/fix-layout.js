@@ -30,91 +30,172 @@ const newBoard = `        {/* BOARD: How it Works (left) | Analyse (center) | 3 
             gap: 14,
           }}
         >
-          {/* \u2500\u2500 COL 1: How it Works (left) \u2500\u2500 */}
-          <motion.div
-            onHoverStart={() => setHovered("how")}
-            onHoverEnd={() => setHovered(null)}
-            whileHover={{ y: -2 }}
-            style={{
-              ...cardBase,
-              border: cardBorder("how"),
-              padding: "22px 22px",
-              cursor: "pointer",
-              transition: "border-color 0.3s",
-              display: "flex",
-              flexDirection: "column",
-            }}
-            onClick={() => router.push("/docs")}
-          >
-            <ScanLine active={hovered === "how"} />
-            <Corners />
-            <Pin />
-            <p
+          {/* ── COL 1: How it Works + Donate (left, stacked) ── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {/* How it Works */}
+            <motion.div
+              onHoverStart={() => setHovered("how")}
+              onHoverEnd={() => setHovered(null)}
+              whileHover={{ y: -2 }}
               style={{
-                fontSize: 9,
-                letterSpacing: 3,
-                color: ACCENT,
-                textTransform: "uppercase",
-                marginBottom: 12,
-                opacity: 0.7,
+                ...cardBase,
+                border: cardBorder("how"),
+                padding: "22px 22px",
+                cursor: "pointer",
+                transition: "border-color 0.3s",
+                display: "flex",
+                flexDirection: "column",
+                flex: 1,
               }}
+              onClick={() => router.push("/docs")}
             >
-              \u2014 {t("home.procedureLabel")} \u2014 {t("nav.howItWorks")}
-            </p>
-            <h2
+              <ScanLine active={hovered === "how"} />
+              <Corners />
+              <Pin />
+              <p
+                style={{
+                  fontSize: 9,
+                  letterSpacing: 3,
+                  color: ACCENT,
+                  textTransform: "uppercase",
+                  marginBottom: 12,
+                  opacity: 0.7,
+                }}
+              >
+                \u2014 {t("home.procedureLabel")} \u2014 {t("nav.howItWorks")}
+              </p>
+              <h2
+                style={{
+                  fontSize: 20,
+                  fontWeight: 700,
+                  color: "#fff",
+                  lineHeight: 1.25,
+                  marginBottom: 16,
+                  letterSpacing: "-0.5px",
+                }}
+              >
+                {t("howItWorks.title")}
+                <br />
+                <span style={{ color: ACCENT }}>{t("howItWorks.highlight")}.</span>
+              </h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
+                {[
+                  { n: "01", title: t("howItWorks.step1Title"), desc: t("howItWorks.step1Desc") },
+                  { n: "02", title: t("howItWorks.step2Title"), desc: t("howItWorks.step2Desc") },
+                  { n: "03", title: t("howItWorks.step3Title"), desc: t("howItWorks.step3Desc") },
+                ].map(({ n, title, desc }) => (
+                  <div key={n} style={{ display: "flex", gap: 10 }}>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        color: ACCENT,
+                        letterSpacing: 2,
+                        flexShrink: 0,
+                        marginTop: 1,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {n}
+                    </span>
+                    <div>
+                      <div style={{ fontSize: 11, color: "#bbb", fontWeight: 600, marginBottom: 2 }}>
+                        {title}
+                      </div>
+                      <div style={{ fontSize: 10, color: "#3a3a3a", lineHeight: 1.5 }}>{desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div
+                style={{
+                  marginTop: 14,
+                  fontSize: 10,
+                  letterSpacing: 2,
+                  color: ACCENT,
+                  textTransform: "uppercase",
+                }}
+              >
+                {t("home.viewProcedure")} \u2192
+              </div>
+            </motion.div>
+
+            {/* Donate */}
+            <motion.div
+              onHoverStart={() => setHovered("donate")}
+              onHoverEnd={() => setHovered(null)}
+              whileHover={{ y: -2 }}
               style={{
-                fontSize: 20,
-                fontWeight: 700,
-                color: "#fff",
-                lineHeight: 1.25,
-                marginBottom: 16,
-                letterSpacing: "-0.5px",
+                ...cardBase,
+                border: cardBorder("donate"),
+                padding: "22px 22px",
+                cursor: "pointer",
+                transition: "border-color 0.3s",
+                display: "flex",
+                flexDirection: "column",
+                flex: 1,
               }}
+              onClick={() => router.push("/donate")}
             >
-              {t("howItWorks.title")}
-              <br />
-              <span style={{ color: ACCENT }}>{t("howItWorks.highlight")}.</span>
-            </h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
-              {[
-                { n: "01", title: t("howItWorks.step1Title"), desc: t("howItWorks.step1Desc") },
-                { n: "02", title: t("howItWorks.step2Title"), desc: t("howItWorks.step2Desc") },
-                { n: "03", title: t("howItWorks.step3Title"), desc: t("howItWorks.step3Desc") },
-              ].map(({ n, title, desc }) => (
-                <div key={n} style={{ display: "flex", gap: 10 }}>
-                  <span
+              <ScanLine active={hovered === "donate"} />
+              <Corners />
+              <Pin />
+              <p
+                style={{
+                  fontSize: 9,
+                  letterSpacing: 3,
+                  color: ACCENT,
+                  textTransform: "uppercase",
+                  marginBottom: 12,
+                  opacity: 0.7,
+                }}
+              >
+                \u2014 {t("home.supportLabel")}
+              </p>
+              <h3
+                style={{
+                  fontSize: 18,
+                  fontWeight: 700,
+                  color: "#fff",
+                  marginBottom: 6,
+                  letterSpacing: "-0.5px",
+                }}
+              >
+                {t("home.supportTitle")}
+              </h3>
+              <p style={{ fontSize: 11, color: "#3a3a3a", lineHeight: 1.6, flex: 1 }}>
+                {t("home.supportSubtitle")}
+              </p>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gap: 6,
+                  margin: "14px 0",
+                }}
+              >
+                {["\u20ac3", "\u20ac10", "\u20ac25"].map((amt) => (
+                  <div
+                    key={amt}
                     style={{
-                      fontSize: 10,
-                      color: ACCENT,
-                      letterSpacing: 2,
-                      flexShrink: 0,
-                      marginTop: 1,
+                      border: "1px solid #1e1e1e",
+                      padding: "7px 4px",
+                      textAlign: "center",
+                      fontSize: 13,
                       fontWeight: 700,
+                      color: "#555",
                     }}
                   >
-                    {n}
-                  </span>
-                  <div>
-                    <div style={{ fontSize: 11, color: "#bbb", fontWeight: 600, marginBottom: 2 }}>
-                      {title}
-                    </div>
-                    <div style={{ fontSize: 10, color: "#3a3a3a", lineHeight: 1.5 }}>{desc}</div>
+                    {amt}
                   </div>
-                </div>
-              ))}
-            </div>
-            <div
-              style={{
-                marginTop: 14,
-                fontSize: 10,
-                letterSpacing: 2,
-                color: ACCENT,
-                textTransform: "uppercase",
-              }}
-            >
-              {t("home.viewProcedure")} \u2192
-            </div>
-          </motion.div>
+                ))}
+              </div>
+              <div
+                style={{ fontSize: 10, letterSpacing: 2, color: ACCENT, textTransform: "uppercase" }}
+              >
+                {t("home.donateNow")} \u2192
+              </div>
+            </motion.div>
+          </div>
 
           {/* \u2500\u2500 COL 2: Analyse (center, full height) \u2500\u2500 */}
           <motion.div
@@ -302,7 +383,7 @@ const newBoard = `        {/* BOARD: How it Works (left) | Analyse (center) | 3 
             </div>
           </motion.div>
 
-          {/* \u2500\u2500 COL 3: Clearance + Donate + Archive (right, stacked) \u2500\u2500 */}
+          {/* ── COL 3: Clearance + Archive (right, stacked) ── */}
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {/* Clearance Levels */}
             <motion.div
@@ -408,83 +489,6 @@ const newBoard = `        {/* BOARD: How it Works (left) | Analyse (center) | 3 
                 style={{ fontSize: 10, letterSpacing: 2, color: ACCENT, textTransform: "uppercase" }}
               >
                 {t("home.viewAllPlans")} \u2192
-              </div>
-            </motion.div>
-
-            {/* Donate */}
-            <motion.div
-              onHoverStart={() => setHovered("donate")}
-              onHoverEnd={() => setHovered(null)}
-              whileHover={{ y: -2 }}
-              style={{
-                ...cardBase,
-                border: cardBorder("donate"),
-                padding: "22px 22px",
-                cursor: "pointer",
-                transition: "border-color 0.3s",
-                display: "flex",
-                flexDirection: "column",
-                flex: 1,
-              }}
-              onClick={() => router.push("/donate")}
-            >
-              <ScanLine active={hovered === "donate"} />
-              <Corners />
-              <Pin />
-              <p
-                style={{
-                  fontSize: 9,
-                  letterSpacing: 3,
-                  color: ACCENT,
-                  textTransform: "uppercase",
-                  marginBottom: 12,
-                  opacity: 0.7,
-                }}
-              >
-                \u2014 {t("home.supportLabel")}
-              </p>
-              <h3
-                style={{
-                  fontSize: 18,
-                  fontWeight: 700,
-                  color: "#fff",
-                  marginBottom: 6,
-                  letterSpacing: "-0.5px",
-                }}
-              >
-                {t("home.supportTitle")}
-              </h3>
-              <p style={{ fontSize: 11, color: "#3a3a3a", lineHeight: 1.6, flex: 1 }}>
-                {t("home.supportSubtitle")}
-              </p>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr 1fr",
-                  gap: 6,
-                  margin: "14px 0",
-                }}
-              >
-                {["\u20ac3", "\u20ac10", "\u20ac25"].map((amt) => (
-                  <div
-                    key={amt}
-                    style={{
-                      border: "1px solid #1e1e1e",
-                      padding: "7px 4px",
-                      textAlign: "center",
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: "#555",
-                    }}
-                  >
-                    {amt}
-                  </div>
-                ))}
-              </div>
-              <div
-                style={{ fontSize: 10, letterSpacing: 2, color: ACCENT, textTransform: "uppercase" }}
-              >
-                {t("home.donateNow")} \u2192
               </div>
             </motion.div>
 
