@@ -265,6 +265,7 @@ export default function HomePage() {
           </div>
 
           <div className="dossier-lang" style={{ display: "flex", alignItems: "center" }}>
+            <LanguageSelector />
           </div>
 
           {session?.user ? (
