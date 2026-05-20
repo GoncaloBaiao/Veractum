@@ -81,13 +81,15 @@ export function sampleTranscript(transcript: string, maxChars: number, videoDura
 export async function generateSummary(
   transcript: string,
   videoTitle: string,
-  locale: string = "en"
+  locale: string = "en",
+  tier: string = "free"
 ): Promise<Summary> {
   const client = getClient();
   const language = LOCALE_LANGUAGE_MAP[locale] || "English";
 
+  const summaryLimit = tier === "veractor" ? 60_000 : tier === "analyst" ? 25_000 : 15_000;
   const truncatedTranscript =
-    transcript.length > 15000 ? transcript.slice(0, 15000) + "…" : transcript;
+    transcript.length > summaryLimit ? transcript.slice(0, summaryLimit) + "…" : transcript;
 
   const result = await withRetry(async () => {
     const response = await client.models.generateContent({
@@ -123,7 +125,7 @@ Transcript:
 ${truncatedTranscript}`,
       config: {
         temperature: 0.3,
-        maxOutputTokens: 4096,
+        maxOutputTokens: tier === "veractor" ? 8192 : 4096,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -154,7 +156,11 @@ ${truncatedTranscript}`,
       throw new Error("No response content from Gemini.");
     }
 
-    return JSON.parse(content) as Record<string, unknown>;
+    try {
+      return JSON.parse(content) as Record<string, unknown>;
+    } catch {
+      throw new Error(`generateSummary: malformed JSON from Gemini — ${content.slice(0, 120)}`);
+    }
   });
 
   const segments: TimelineSegment[] = (
@@ -180,12 +186,13 @@ ${truncatedTranscript}`,
   };
 }
 
-export async function extractClaims(transcript: string, locale: string = "en", maxClaims: number = 8): Promise<Claim[]> {
+export async function extractClaims(transcript: string, locale: string = "en", maxClaims: number = 8, tier: string = "free"): Promise<Claim[]> {
   const client = getClient();
   const language = LOCALE_LANGUAGE_MAP[locale] || "English";
 
+  const claimsLimit = tier === "veractor" ? 40_000 : tier === "analyst" ? 15_000 : 10_000;
   const truncatedTranscript =
-    transcript.length > 10000 ? transcript.slice(0, 10000) + "…" : transcript;
+    transcript.length > claimsLimit ? transcript.slice(0, claimsLimit) + "…" : transcript;
 
   let result: Record<string, unknown>;
   try {

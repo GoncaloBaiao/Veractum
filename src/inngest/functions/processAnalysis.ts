@@ -12,28 +12,31 @@ export const processAnalysisJob = inngest.createFunction(
     triggers: [{ event: "analysis/process" }],
   },
   async ({ event }) => {
-    const { analysisId, transcript, videoTitle, locale, maxClaims, videoDurationSecs } = event.data as {
+    const { analysisId, transcript, videoTitle, locale, maxClaims, videoDurationSecs, tier } = event.data as {
       analysisId: string;
       transcript: string;
       videoTitle: string;
       locale: string;
       maxClaims: number;
       videoDurationSecs: number;
+      tier: string;
     };
 
     const prisma = getPrismaClient();
     if (!prisma) return;
 
     // transcript from route.ts is already evenly sampled across the full video.
-    // Re-sample to safe AI input sizes with real timestamp annotations so Gemini
+    // Re-sample to tier-based AI input sizes with real timestamp annotations so Gemini
     // generates claims and segments spread across the full video duration.
-    const summaryTranscript = sampleTranscript(transcript, 15_000, videoDurationSecs);
-    const claimsTranscript = sampleTranscript(transcript, 10_000, videoDurationSecs);
+    const summaryLimit = tier === "veractor" ? 60_000 : tier === "analyst" ? 25_000 : 15_000;
+    const claimsLimit  = tier === "veractor" ? 40_000 : tier === "analyst" ? 15_000 : 10_000;
+    const summaryTranscript = sampleTranscript(transcript, summaryLimit, videoDurationSecs);
+    const claimsTranscript  = sampleTranscript(transcript, claimsLimit, videoDurationSecs);
 
     try {
       const [summary, claims] = await Promise.all([
-        generateSummary(summaryTranscript, videoTitle, locale),
-        extractClaims(claimsTranscript, locale, maxClaims),
+        generateSummary(summaryTranscript, videoTitle, locale, tier),
+        extractClaims(claimsTranscript, locale, maxClaims, tier),
       ]);
 
       const factCheckedClaims = await factCheckClaims(claims, locale, maxClaims);

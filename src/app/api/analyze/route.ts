@@ -243,6 +243,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         locale: effectiveLocale,
         maxClaims: tierConfig.maxClaims,
         videoDurationSecs,
+        tier: userTier,
       },
     });
 
